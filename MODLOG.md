@@ -208,3 +208,8 @@ Reduced ride-only glute-bone wobble to 30% of its former response and limited it
 
 - Auto hand placement now chooses different resting places by pose: Kneeling uses thighs or her ribs, Astride her ribs or his chest, Over him his chest, Leaning back his thighs, and Reverse her hips or thighs. Cowgirl keeps the pleasure driven chest reach, while Squatting uses her thighs or ribs and can brace at the sides at speed.
 - Her own hips are a new hand target that follows her pelvis. Pose changes and orgasms can select a new target immediately; other changes keep the existing ten second dwell and the per arm reach fallback.
+
+## 0.3.19 (2026-10-10) - sex menu navigation
+
+- The Sex page has three short views: Scene for place, hole and pose; Movement for tempo, depth and movement options; Details for X-ray, orgasm and condom. Start/stop and current status stay above the navigation on every view.
+- Switching views returns to their top so settings cannot open halfway down the previous view. Existing configuration keys and actions are unchanged.

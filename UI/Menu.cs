@@ -421,11 +421,15 @@ namespace CMAScenes
             GUILayout.EndHorizontal();
             GUILayout.Space(10f);
 
+            if (s_tab == TabRide)
+            {
+                DrawRideHeader(host, st);
+            }
             s_scroll = GUILayout.BeginScrollView(s_scroll, GUILayout.ExpandHeight(true));
             switch (s_tab)
             {
                 case TabTwerk: DrawTwerk(host, st); break;
-                case TabRide: DrawRide(host, st); break;
+                case TabRide: DrawRideContent(host, st); break;
                 case TabBikini: DrawBikini(host, st); break;
                 case TabProfiles: DrawProfiles(host, st); break;
                 case TabSettings: DrawSettings(host, st); break;

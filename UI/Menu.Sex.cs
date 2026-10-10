@@ -14,8 +14,9 @@ namespace CMAScenes
         // are the mod's own mechanics, they have settings in the file of settings for whoever wants them, and no row here.
 
         private static readonly string[] CondomColors = { "Clear", "Pink", "Red", "Blue", "Black" };
+        private static int s_ridePage;
 
-        private static void DrawRide(ShakeController host, Styles st)
+        private static void DrawRideHeader(ShakeController host, Styles st)
         {
             CardBegin(st, null);
             if (GUILayout.Button(host.Riding ? T("Stop: she gets off him", "Закончить: она слезает с него") : T("Start: she gets on top of him", "Начать: она садится на него сверху"), host.Riding ? st.button : st.primary, GUILayout.Height(40f)))
@@ -33,6 +34,39 @@ namespace CMAScenes
             }
             CardEnd();
 
+            GUILayout.BeginHorizontal();
+            string[] pages = { T("Scene", "Сцена"), T("Movement", "Движение"), T("Details", "Дополнительно") };
+            for (int i = 0; i < pages.Length; i++)
+            {
+                if (i > 0)
+                {
+                    GUILayout.Space(8f);
+                }
+                if (GUILayout.Button(pages[i], i == s_ridePage ? st.primary : st.button, GUILayout.Height(36f)))
+                {
+                    s_ridePage = i;
+                    s_scroll = Vector2.zero;
+                }
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Label(s_ridePage == 0 ? T("Choose where and how she sits on him.", "Выберите место и позу.")
+                : s_ridePage == 1 ? T("Set the rhythm and how the two of them move.", "Настройте ритм и движения обоих.")
+                : T("X-ray, orgasm and condom.", "X-ray, оргазм и презерватив."), st.dim);
+            GUILayout.Space(6f);
+        }
+
+        private static void DrawRideContent(ShakeController host, Styles st)
+        {
+            switch (s_ridePage)
+            {
+                case 0: DrawRideScene(host, st); break;
+                case 1: DrawRideMovement(st); break;
+                default: DrawRideDetails(host, st); break;
+            }
+        }
+
+        private static void DrawRideScene(ShakeController host, Styles st)
+        {
             CardBegin(st, T("Place", "Место"));
             GUILayout.Label(host.PlaceLabel(), st.good);
             GUILayout.BeginHorizontal();
@@ -70,9 +104,15 @@ namespace CMAScenes
             }
             CardEnd();
 
-            CardBegin(st, T("Penetration", "Проникновение"));
+            CardBegin(st, T("Position", "Поза"));
             HoleRow(st);
             PoseRow(st, T("Position", "Поза"), Poses.Ride, Plugin.RidePoseType);
+            CardEnd();
+        }
+
+        private static void DrawRideMovement(Styles st)
+        {
+            CardBegin(st, T("Movement", "Движение"));
             Slider(st, T("Tempo", "Темп"), Plugin.RideFrequency, 0.3f, 2.5f, "0.00", PerSec, 1f,
                 Plugin.RideLead.Value
                     ? T("While she leads she picks her tempo herself, by the speed of him in her that she likes. This slider (and the mood) only says which side of that she keeps to: the slower or the faster.", "Пока она ведёт сама, темп она выбирает по скорости, которая ей приятнее всего. Этот ползунок (и «Настрой») лишь задаёт, какого края она держится: медленного или быстрого.")
@@ -101,7 +141,10 @@ namespace CMAScenes
             Check(st, T("Her feet find the ground", "Ступни сами находят опору"), Plugin.RideFeetAuto,
                 T("A ray down at each foot: the floor, a rug, a bench top, a step. Her ankles stand as high above it as the game's pose has them (in heels, higher) and her soles lie along a slope.", "Луч вниз к каждой ступне: пол, ковёр, верх скамьи, ступенька. Лодыжки стоят над опорой так же высоко, как в позе игры (на каблуках выше), подошвы ложатся вдоль склона."));
             CardEnd();
+        }
 
+        private static void DrawRideDetails(ShakeController host, Styles st)
+        {
             CardBegin(st, "X-ray");
             Check(st, T("X-ray: see him move in her", "X-ray: видно, как он ходит в ней") + (Plugin.XRayKey.Value != KeyCode.None ? "  [" + Loc.Key(Plugin.XRayKey.Value) + "]" : ""), Plugin.XRay,
                 T("During the sex her insides are shown as the game itself has them (her canal, her womb, her rectum: the game moves and stretches them round him), with what of his penis is in her, and his semen in her as the game has it: it fills her, and while the game lets it out of her it runs down her canal and out. After the sex the X-ray stays on her for as long as the game still has his semen in her. Also on its key.",
