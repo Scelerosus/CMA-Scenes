@@ -55,7 +55,9 @@ namespace CMAScenes
             }
             else if (string.Equals(pose, "Kneeling", StringComparison.OrdinalIgnoreCase))
             {
-                want = lively ? "UnderBreasts" : "Thighs";
+                // Cupping herself lifts both elbows and leaves no support for a kneeling stroke. Her palms
+                // seek his torso while she is active, or rest on her own thighs if it is out of reach.
+                want = lively ? "HisChest" : "Thighs";
             }
             else if (string.Equals(pose, "Astride", StringComparison.OrdinalIgnoreCase))
             {

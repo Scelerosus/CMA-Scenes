@@ -675,16 +675,22 @@ namespace CMAScenes
                         {
                             m_outSince = now;
                         }
-                        if (now - m_outSince > 0.25f)
+                        // A lost game penetration flag with no upward travel is not evidence that the top of
+                        // her stroke was too high. Give the game's contact a little longer to settle there.
+                        bool movedUp = m_sTop - m_sSeat > 0.015f && m_strokeNow > 0.012f;
+                        if (now - m_outSince > (movedUp ? 0.25f : 0.75f))
                         {
                             m_outSince = 0f;
                             m_mount = 1;
                             m_mountAt = now;
                             // (She has learned how far up him this hole of hers goes: the next strokes stop short of it.)
                             m_slips++;
-                            m_topCut = Mathf.Min(0.08f, m_topCut + 0.02f);
+                            if (movedUp)
+                            {
+                                m_topCut = Mathf.Min(0.08f, m_topCut + 0.02f);
+                            }
                             m_tipInLow = float.MaxValue;
-                            MountLog($"he slipped out of her (slip {m_slips} of this ride; at the top of a stroke {m_speedNow:F2} strokes a second, the stroke {(m_sTop - m_sSeat) * 100f:F1} cm long); she stops, comes up over his tip and takes him in again. From now on her strokes stop {(((m_holeAnal ? 0.055f : 0.035f) + m_topCut) * 100f):F1} cm short of his tip.");
+                            MountLog($"he slipped out of her (slip {m_slips} of this ride; {m_speedNow:F2} strokes a second, the stroke {(m_sTop - m_sSeat) * 100f:F1} cm long, upward travel {(m_strokeNow * 100f):F1} cm, game entered {game}, geometry in {geo}); she stops and takes him in again. The top margin is {(((m_holeAnal ? 0.055f : 0.035f) + m_topCut) * 100f):F1} cm.");
                         }
                     }
                     else
