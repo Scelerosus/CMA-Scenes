@@ -73,7 +73,9 @@ namespace CMAScenes
             }
             else if (string.Equals(pose, "Squatting", StringComparison.OrdinalIgnoreCase))
             {
-                want = lively ? "UnderBreasts" : "Thighs";
+                // The palms stay on her thighs while her legs carry the squat. Cupping herself lifts both
+                // elbows abruptly with every stroke and leaves the pose without a visible support.
+                want = "Thighs";
             }
             else if (lively)
             {

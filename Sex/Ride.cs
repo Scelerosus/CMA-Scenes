@@ -271,11 +271,12 @@ namespace CMAScenes
             {
                 handsOn = "Thighs";
             }
-            else if (me.m_holdW > 0.5f && !herBack)
+            else if (me.m_holdW > 0.5f && !herBack
+                && !string.Equals(poseName, "Leaning back", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(poseName, "Squatting", StringComparison.OrdinalIgnoreCase))
             {
-                // (Held by him, she lets herself be: her hands on his forearms, which hold her hips. On his chest only where she
-                // leans onto him for it: sitting up or leaning back that took a bend of 50 to 80 deg her pose did not have, and
-                // her hands stopped in the air before her chest.)
+                // In forward-facing poses she can rest on his forearms while he holds her. Leaning back
+                // and squatting keep their own stable contacts instead of twisting both wrists toward him.
                 handsOn = "HisArms";
             }
             bool chestThere = !herBack && me.m_heroReady && me.m_heroChest != null;
@@ -290,9 +291,9 @@ namespace CMAScenes
             // (Or on the floor either side of his head, as she lies over him; with no head of his to go by, on his chest.)
             bool floorThere = !herBack && me.m_heroReady && me.m_heroHead != null;
             float onFloor = Glide(w, G.RideHandsFloor, floorThere && floorNow ? 1f : 0f);
-            // (And when she rides fast: on the floor either side of him, whatever is set, her weight on her hands.)
-            // (Not on a place too narrow to have room beside him: there her hands stay where they are.)
-            float onSide = Glide(w, G.RideHandsSide, me.m_fastHands && floorThere && riding && me.PlaceDrop(pelvisBase + right * 0.32f + fwd * 0.3f) < 0.05f ? 1f : 0f);
+            // Keep the chosen contact when the pace changes; moving both palms sideways every time she
+            // speeds up made them sweep across him while her feet and knees stayed planted.
+            float onSide = Glide(w, G.RideHandsSide, 0f);
             onChest *= 1f - onSide;
             onUnder *= 1f - onSide;
             onFloor *= 1f - onSide;
@@ -320,10 +321,11 @@ namespace CMAScenes
             chestSpot[0] = chestSpot[1] = Vector3.zero;
             float chestBend = 0f;
             float leanSet = Plugin.RideLean.Value;
-            bool chestBracePose = string.Equals(poseName, "Over him", StringComparison.OrdinalIgnoreCase)
+            bool overHim = string.Equals(poseName, "Over him", StringComparison.OrdinalIgnoreCase);
+            bool chestBracePose = overHim
                 || string.Equals(poseName, "Astride", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(poseName, "Kneeling", StringComparison.OrdinalIgnoreCase);
-            float chestBendLimit = chestBracePose ? 22f : 40f;
+            float chestBendLimit = overHim ? 54f : chestBracePose ? 42f : 40f;
             if (onChest > 0.001f && me.m_heroChest != null)
             {
                 // Search separately for each palm. A shorter arm can settle lower on his torso without dragging the
@@ -355,16 +357,16 @@ namespace CMAScenes
                     Vector3 shoulder = arm.upper.t.position;
                     float armLen = (arm.fore.t.position - shoulder).magnitude + (arm.end.t.position - arm.fore.t.position).magnitude;
                     Vector3 side = (i == 0 ? -handSide : handSide) * 0.14f;
-                    float bestFar = 0.17f, bestLean = 0f;
+                    float bestFar = 0.12f, bestLean = 0f;
                     bool found = false;
-                    for (float f = far; f >= 0.17f && !found; f -= 0.025f)
+                    for (float f = far; f >= 0.12f && !found; f -= 0.025f)
                     {
                         Vector3 candidate = home + hFwd * f + side;
                         float surface = me.HeroTopAt(candidate);
                         candidate.y = (float.IsNegativeInfinity(surface) ? me.m_penisGoalBase.y + 0.02f : surface) + 0.025f;
                         for (float a = 0f; a <= chestBendLimit; a += 2f)
                         {
-                            if ((me.SpineAt(w, right, leanSet, a, 0f, me.m_holeTilt, shoulder) - candidate).sqrMagnitude <= armLen * armLen * 0.82f)
+                            if ((me.SpineAt(w, right, leanSet, a, 0f, me.m_holeTilt, shoulder) - candidate).sqrMagnitude <= armLen * armLen * 0.90f)
                             {
                                 bestFar = f;
                                 bestLean = a;
@@ -742,7 +744,7 @@ namespace CMAScenes
                     hisLeg = hisLeg.sqrMagnitude > 1e-6f ? hisLeg.normalized : -fwd;
                     Vector3 hisTop = Vector3.ProjectOnPlane(Vector3.up, hisLeg);
                     hisTop = hisTop.sqrMagnitude > 1e-4f ? hisTop.normalized : Vector3.up;
-                    target += onBack * (Vector3.Lerp(hHip.position, hKnee.position, 0.42f) + hisTop * 0.09f);
+                    target += onBack * (Vector3.Lerp(hHip.position, hKnee.position, 0.25f) + hisTop * 0.09f + outward * 0.06f);
                     pole += onBack * (outward * 0.7f - fwd * 0.7f - Vector3.up * 0.1f);
                     layBack += onBack * hisTop;
                     layWish += onBack * (-fwd * 0.9f + outward * 0.2f).normalized;

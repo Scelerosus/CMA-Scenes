@@ -29,12 +29,12 @@ namespace CMAScenes
         internal static readonly Pose[] Ride =
         {
             new Pose { name = "Cowgirl", values = new[] { "Ride|Facing=Face", "Ride|Lean=18", "Ride|Legs=Feet" } },
-            new Pose { name = "Astride", values = new[] { "Ride|Facing=Face", "Ride|Lean=30", "Ride|Legs=Knees" } },
-            new Pose { name = "Over him", values = new[] { "Ride|Facing=Face", "Ride|Lean=22", "Ride|Legs=Knees" } },
-            new Pose { name = "Leaning back", values = new[] { "Ride|Facing=Face", "Ride|Lean=-18", "Ride|Legs=Feet" } },
+            new Pose { name = "Astride", values = new[] { "Ride|Facing=Face", "Ride|Lean=34", "Ride|Legs=Knees" } },
+            new Pose { name = "Over him", values = new[] { "Ride|Facing=Face", "Ride|Lean=38", "Ride|Legs=Knees" } },
+            new Pose { name = "Leaning back", values = new[] { "Ride|Facing=Face", "Ride|Lean=-27", "Ride|Legs=Feet" } },
             new Pose { name = "Reverse", values = new[] { "Ride|Facing=Away", "Ride|Lean=26", "Ride|Legs=Feet" } },
             new Pose { name = "Squatting", values = new[] { "Ride|Facing=Face", "Ride|Lean=26", "Ride|Legs=Feet", "Ride|Squat=0.54" } },
-            new Pose { name = "Kneeling", values = new[] { "Ride|Facing=Face", "Ride|Lean=22", "Ride|Legs=Knees" } }
+            new Pose { name = "Kneeling", values = new[] { "Ride|Facing=Face", "Ride|Lean=28", "Ride|Legs=Knees" } }
         };
 
         internal static int IndexOf(Pose[] set, string name)
