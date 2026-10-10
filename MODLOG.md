@@ -122,3 +122,11 @@ prefix on TryEyacular only shrank the amount, not the count), and the game lets 
   (limited by his own skin surface) keeps his belly clean.
 - Hands: not touched (no screenshot of 0.3.0). Log shows "her left/right hand cannot reach where it is to go (8-21 cm past her arm)"
   in Cowgirl/Astride: hand rests on her thigh instead.
+
+## 0.3.2 (2026-10-10) - from the 0.3.1 log (wrist diagnostics); NOT run in the game
+Log: hands on him (Astride/Cowgirl): both wrists pinned at pronation 85 deg and extension 63-75 deg, strain 2.5-4 all the while (at rest 0.06);
+`Arms: her/his fingers: not found by name (0 of 4)`: the fingers stay as clawed as the game's animation has them (screenshot of
+2026-10-10: curled claws on his belly). Done: `FingersFind` falls back to the bones of a finger by name when they are not nested
+(sorted from the wrist outward), and logs the names under the hand when it still finds nothing (`Arms: the bones under ...`).
+Neutral of the wrist turn (LayHand) was re-derived by hand: signs for both arms are consistent; left hand of the game's own pose
+reads 125 deg palm up against 1 deg on the right, not explained. Wrist diagnostics (`wrist as laid`, every 6 s) stay in.

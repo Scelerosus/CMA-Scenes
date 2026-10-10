@@ -44,6 +44,7 @@ namespace CMAScenes
     {
         // (Degrees, from the hand in line with its forearm, thumb up. A forearm turns the palm down some 85 and up some 80;
         // a wrist bends back some 75 and forward some 70, and sideways 20 toward the thumb and 30 toward the little finger.)
+        private static readonly float[] s_wristLogAt = new float[2];
         private const float PronateMost = 85f, SupinateMost = 80f, ExtendMost = 75f, FlexMost = 70f, RadialMost = 20f, UlnarMost = 30f;
 
         // Her arm put with its hand at "target", her elbow toward "pole" or round from it as her wrist asks, and her hand
@@ -155,6 +156,17 @@ namespace CMAScenes
                 }
             }
             LayHand(side, along, hinge, back.normalized, wish.normalized, out Vector3 fg, out Vector3 bk);
+            if (hinge.sqrMagnitude > 0.5f && Time.unscaledTime >= s_wristLogAt[side & 1])
+            {
+                // (For the record, every few seconds: how far each wrist is turned and bent, to check the neutral it is counted from.)
+                s_wristLogAt[side & 1] = Time.unscaledTime + 6f;
+                Vector3 neutral = side == 1 ? -hinge : hinge;
+                float turn = WristTurn(along, neutral, bk);
+                float pron = side == 1 ? turn : -turn;
+                float ext = -Mathf.Asin(Mathf.Clamp(Vector3.Dot(along, bk), -1f, 1f)) * Mathf.Rad2Deg;
+                float cost = LayHand(side, along, hinge, back.normalized, wish.normalized, out Vector3 _, out Vector3 _);
+                Plugin.ModLog.LogInfo($"Arms: {arm.who} {(side == 0 ? "left" : "right")} wrist as laid: {Mathf.Abs(pron):F0} deg {(pron >= 0f ? "palm down" : "palm up")} from thumb-up (neutral {neutral.x:F2} {neutral.y:F2} {neutral.z:F2}, forearm {along.x:F2} {along.y:F2} {along.z:F2}), bent {ext:F0} deg, strain {cost:F2}.");
+            }
             Quaternion own = Quaternion.LookRotation(arm.handFingers, -arm.handPalm);
             Quaternion want = Quaternion.LookRotation(fg, bk) * Quaternion.Inverse(own);
             Quaternion handNew = Quaternion.Slerp(hand.rotation, want, w);
@@ -428,6 +440,28 @@ namespace CMAScenes
                         bones.Add(new RotSlot(next));
                         at = next;
                     }
+                    if (bones.Count < 2)
+                    {
+                        // (Not nested: the bones of this finger by their names, from the one nearest the wrist outward.)
+                        var same = new List<Transform>();
+                        for (int c = 0; under != null && c < under.Length; c++)
+                        {
+                            if (under[c] != null && under[c] != hand && IsFinger(under[c].name, key))
+                            {
+                                same.Add(under[c]);
+                            }
+                        }
+                        same.Sort((p, q) => (p.position - hand.position).sqrMagnitude.CompareTo((q.position - hand.position).sqrMagnitude));
+                        if (same.Count >= 2)
+                        {
+                            bones = new List<RotSlot>();
+                            for (int k = 0; k < same.Count && k < 3; k++)
+                            {
+                                bones.Add(new RotSlot(same[k]));
+                            }
+                            root = same[0];
+                        }
+                    }
                     if (bones.Count >= 2)
                     {
                         foreach (RotSlot b in bones)
@@ -441,6 +475,18 @@ namespace CMAScenes
                 if (chains.Count >= 3)
                 {
                     arm.fingers = chains.ToArray();
+                }
+                if (arm.fingers == null)
+                {
+                    var kids = new System.Text.StringBuilder();
+                    for (int c = 0; under != null && c < under.Length && c < 40; c++)
+                    {
+                        if (under[c] != null && under[c] != hand)
+                        {
+                            kids.Append(kids.Length > 0 ? ", " : "").Append(under[c].name).Append(under[c].parent == hand ? "*" : "");
+                        }
+                    }
+                    Plugin.ModLog.LogInfo($"Arms: the bones under {arm.who} hand '{hand.name}' (* right under it): {kids}.");
                 }
                 Plugin.ModLog.LogInfo($"Arms: {arm.who} {(arm.side == 0 ? "left" : "right")} fingers: {(arm.fingers != null ? names.ToString() + "; they are laid flat and close where the hand holds on" : "not found by name (" + chains.Count + " of 4); they are left as the game has them")}.");
             }
