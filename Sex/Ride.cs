@@ -673,8 +673,11 @@ namespace CMAScenes
                 }
                 // (Never further down than her arm reached at the top of the last strokes: it settles there and stays.)
                 me.m_handPart[i] = part < me.m_handPart[i] ? Mathf.Lerp(me.m_handPart[i], part, 1f - Mathf.Exp(-dt / 0.15f)) : Mathf.Lerp(me.m_handPart[i], part, 1f - Mathf.Exp(-dt / 4f));
-                // On her thigh: her palm on its upper side, her fingers toward her knee and a little inward, her elbow out.
-                Vector3 thighSpot = Vector3.Lerp(hipJoint, knee, me.m_handPart[i]) + top * 0.085f + outward * 0.02f;
+                // The wrist must clear the thigh's skin and the thickness of her palm. The old 8.5 cm
+                // offset placed the wrist inside the upper thigh when her knee rose; curling the fingers
+                // there made them emerge through its surface. Keep the palm on its outer upper side.
+                float thighSurface = Mathf.Lerp(0.14f, 0.12f, me.m_handPart[i]);
+                Vector3 thighSpot = Vector3.Lerp(hipJoint, knee, me.m_handPart[i]) + top * thighSurface + outward * 0.055f;
                 Vector3 thighPole = outward * 0.9f - fwd * 0.5f - Vector3.up * 0.2f;
                 Vector3 thighWish = (thigh - outward * 0.22f).normalized;
                 float chestHere = onChest * me.m_chestOk[i];
@@ -795,7 +798,8 @@ namespace CMAScenes
                     float g1 = Mathf.PerlinNoise(tg * 6.1f + i * 3.7f, me.m_seed + 31f) * 2f - 1f;
                     float g2 = Mathf.PerlinNoise(tg * 4.7f + i * 5.3f, me.m_seed + 47f) * 2f - 1f;
                     Vector3 press = layBack.sqrMagnitude > 1e-6f ? layBack.normalized : Vector3.up;
-                    target += (outward * (g1 * 0.004f) + fwd * (g2 * 0.004f) - press * 0.008f) * grip;
+                    target += (outward * (g1 * 0.004f) + fwd * (g2 * 0.004f)
+                        - press * (0.008f - 0.006f * Mathf.Clamp01(thighHere + arm.reachFall))) * grip;
                 }
                 // (Between places behind her and before her the ways her fingers would rather point cancel out: then they go on
                 // the way her arm reaches. It is only a wish: the way her forearm runs decides the most of it.)
@@ -822,7 +826,9 @@ namespace CMAScenes
                     // Her elbow goes where her wrist is spared, her hand lies as far as a wrist lets it, her fingers lie on
                     // what her hand lies on (round his forearm, they hold it). (Wrist.cs)
                     float straight = Mathf.Clamp01(1f - 0.5f * onUnder - 0.7f * onArms) * 0.85f;
-                    float holdOn = Mathf.Clamp01(grip + 0.45f * onArms);
+                    // A palm resting on her thigh can tense, but closing the fingers around it buries
+                    // the fingertips in the leg, especially when a chest reach falls back mid-stroke.
+                    float holdOn = Mathf.Clamp01(grip * (1f - 0.85f * Mathf.Clamp01(thighHere + arm.reachFall)) + 0.45f * onArms);
                     ArmSolve(arm, i, target, pole, layWish, layBack, poseW, 1f, straight, holdOn);
                 }
                 else
