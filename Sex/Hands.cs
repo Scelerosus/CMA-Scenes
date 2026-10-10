@@ -22,10 +22,25 @@ namespace CMAScenes
         // joint by joint as the pose turns it, from where her bones are before she is posed and where her hips were
         // put the frame before. (The lean is shared out: her pelvis 45 %, her waist 25, her spine 18 and 12; in this
         // rig her waist hangs from her hips beside her pelvis, so her shoulders turn by 55 % of it only.)
-        private Vector3 SpineAt(Woman w, Vector3 right, float lean, float extra, float arch, float tilt, Vector3 point)
+        private readonly struct SpineFrame
         {
-            Vector3 p0 = w.sPelvis.t.position, p1 = w.sWaist.t.position, p2 = w.sSp1.t.position, p3 = w.sSp2.t.position;
-            bool onPelvis = w.sWaist.t.IsChildOf(w.sPelvis.t);
+            internal readonly Vector3 p0, p1, p2, p3;
+            internal readonly bool onPelvis;
+
+            internal SpineFrame(Woman w)
+            {
+                p0 = w.sPelvis.t.position;
+                p1 = w.sWaist.t.position;
+                p2 = w.sSp1.t.position;
+                p3 = w.sSp2.t.position;
+                onPelvis = w.sWaist.t.IsChildOf(w.sPelvis.t);
+            }
+        }
+
+        private Vector3 SpineAt(SpineFrame frame, Vector3 right, float lean, float extra, float arch, float tilt, Vector3 point)
+        {
+            Vector3 p0 = frame.p0, p1 = frame.p1, p2 = frame.p2, p3 = frame.p3;
+            bool onPelvis = frame.onPelvis;
             float pelvis = lean * 0.45f + arch + tilt;
             float back = onPelvis ? tilt : 0f;
             // (The bend over him: 35 % of it is her pelvis tipping forward at her hip joints, her back going with it;
@@ -184,8 +199,6 @@ namespace CMAScenes
         // shoulders: the least that brings her shoulders within an arm of it. Eased: her hips move with every stroke,
         // and her hands, which are on him, stay where they are.
         private float m_overBend, m_sideBend;
-        // (Faster than the speed that is set: her hands go to the floor either side of him. Plugin.cs.)
-        private bool m_fastHands;
 
         private float OverBend(Woman w, Vector3 right, float lean, float arch, float tilt, float dt)
         {
@@ -219,18 +232,19 @@ namespace CMAScenes
                 return m_sideBend;
             }
             float best = 0f, bestRatio = float.MaxValue;
+            SpineFrame spine = new SpineFrame(w);
+            Vector3 shoulder0 = w.arms[0].upper.t.position, shoulder1 = w.arms[1].upper.t.position;
+            Vector3 fore0 = w.arms[0].fore.t.position, fore1 = w.arms[1].fore.t.position;
+            float reach0 = (fore0 - shoulder0).magnitude + (w.arms[0].end.t.position - fore0).magnitude;
+            float reach1 = (fore1 - shoulder1).magnitude + (w.arms[1].end.t.position - fore1).magnitude;
             for (float e = 0f; e <= 110f; e += 3f)
             {
                 float ratio = 0f;
                 for (int i = 0; i < 2; i++)
                 {
-                    Limb arm = w.arms[i];
-                    Vector3 shoulder = arm.upper.t.position;
-                    float reach = (arm.fore.t.position - shoulder).magnitude +
-                        (arm.end.t.position - arm.fore.t.position).magnitude;
-                    float distance = (SpineAt(w, right, lean, e, arch, tilt, shoulder) -
+                    float distance = (SpineAt(spine, right, lean, e, arch, tilt, i == 0 ? shoulder0 : shoulder1) -
                         (i == 0 ? left : other)).magnitude;
-                    ratio = Mathf.Max(ratio, distance / Mathf.Max(0.01f, reach));
+                    ratio = Mathf.Max(ratio, distance / Mathf.Max(0.01f, i == 0 ? reach0 : reach1));
                 }
                 if (ratio < bestRatio)
                 {
@@ -262,9 +276,10 @@ namespace CMAScenes
             }
             float best = 0f, bestD = float.MaxValue;
             bool reached = false;
+            SpineFrame spine = new SpineFrame(w);
             for (float e = 0f; e <= 110f && !reached; e += 3f)
             {
-                float d = (SpineAt(w, right, lean, e, arch, tilt, shoulders) - mid).magnitude;
+                float d = (SpineAt(spine, right, lean, e, arch, tilt, shoulders) - mid).magnitude;
                 // (No more than it takes with her arms all but straight: the less she bends, the higher she is held.)
                 if (d <= arm * 0.95f)
                 {

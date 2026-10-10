@@ -271,11 +271,6 @@ namespace CMAScenes
             }
             mo.phase += dt * asked * 2f * Mathf.PI;
             m_speedNow = asked;
-            // How much faster than the speed that is set she is riding now (the preset, the rhythm and her arousal all
-            // have a say): past a point she takes her weight on her hands, either side of him. (With some slack between
-            // going there and coming back, so that she does not dither.)
-            float faster = m_ride ? asked / Mathf.Max(0.05f, led ? m_leadRate : Plugin.RideFrequency.Value) : 1f;
-            m_fastHands = Plugin.RideHandsFast.Value && m_ride && (m_fastHands ? faster > 1.06f : faster > 1.15f);
             if (mo.phase > 2000f * Mathf.PI)
             {
                 mo.phase -= 2000f * Mathf.PI;

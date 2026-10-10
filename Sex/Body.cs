@@ -310,7 +310,7 @@ namespace CMAScenes
             {
                 bool kneel = string.Equals(Plugin.RideLegs.Value, "Knees", StringComparison.OrdinalIgnoreCase);
                 // (The work of it: how fast she goes, how much of it is up and down, and what carries her weight.)
-                float effort = Mathf.Pow(Mathf.Max(0.05f, m_speedNow), 1.5f) * (0.5f + 0.5f * Mathf.Clamp01(m_motion.bounce)) * (kneel ? 0.6f : 1f) * (m_fastHands ? 0.85f : 1f);
+                float effort = Mathf.Pow(Mathf.Max(0.05f, m_speedNow), 1.5f) * (0.5f + 0.5f * Mathf.Clamp01(m_motion.bounce)) * (kneel ? 0.6f : 1f);
                 m_tired = Mathf.Min(1f, m_tired + dt * effort / (75f * Mathf.Clamp(Plugin.RideStamina.Value, 0.3f, 5f)));
                 if (m_tired >= 1f)
                 {

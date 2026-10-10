@@ -259,14 +259,9 @@ namespace CMAScenes
             // Where her hands are: on her own thighs, under her breasts, or on his chest (then she leans over him as far as
             // it takes to reach it; with her back to him his chest is behind her, and her hands stay on her thighs). Each
             // place has a weight that glides, so changing it moves her arms there.
-            // (Her hands are always her own: where they go follows her pleasure and the pace, Scenes.cs AutoHands. The old setting
-            // "Ride/HandsMode" is no longer read, and the poses no longer ask for a place.)
-            string handsOn = "Auto";
+            // Her contact follows the pose and her pleasure (Scenes.cs AutoHands).
             bool herBack = string.Equals(Plugin.RideFacing.Value, "Away", StringComparison.OrdinalIgnoreCase);
-            if (string.Equals(handsOn, "Auto", StringComparison.OrdinalIgnoreCase))
-            {
-                handsOn = me.AutoHands(herBack);
-            }
+            string handsOn = me.AutoHands(herBack);
             if (poseT < 0.45f)
             {
                 handsOn = "Thighs";
@@ -348,6 +343,7 @@ namespace CMAScenes
                     hFwd = fwd;
                 }
                 float bestLeanTogether = 0f;
+                SpineFrame spine = new SpineFrame(w);
                 for (int i = 0; i < 2; i++)
                 {
                     Limb arm = w.arms[i];
@@ -368,7 +364,7 @@ namespace CMAScenes
                         candidate.y = (float.IsNegativeInfinity(surface) ? me.m_penisGoalBase.y + 0.02f : surface) + 0.025f;
                         for (float a = 0f; a <= chestBendLimit; a += 2f)
                         {
-                            if ((me.SpineAt(w, right, leanSet, a, 0f, me.m_holeTilt, shoulder) - candidate).sqrMagnitude <= armLen * armLen * 0.90f)
+                            if ((me.SpineAt(spine, right, leanSet, a, 0f, me.m_holeTilt, shoulder) - candidate).sqrMagnitude <= armLen * armLen * 0.90f)
                             {
                                 bestFar = f;
                                 bestLean = a;

@@ -45,6 +45,9 @@ namespace CMAScenes
         private float m_wetDrawAt;
         private float m_wetDrawCost;
         private int m_upNext;
+        private readonly float[] m_drawWet = new float[WetBins * 4 + 1];
+        private readonly float[] m_drawFilm = new float[WetBins * 4 + 1];
+        private readonly float[] m_drawLevel = new float[WetBins * 4 + 1];
 
         private static float Soft(float x)
         {
@@ -110,10 +113,10 @@ namespace CMAScenes
             Array.Copy(m_wetAlong, m_wetDrawn, WetBins);
             Array.Copy(m_spitAlong, m_spitDrawn, WetBins);
             int last = WetBins * 4;
-            var wet = new float[last + 1];
+            float[] wet = m_drawWet;
             // For the relief: how thick the film of liquid on him is (metres) and how far it levels his skin (0..1).
-            var film = new float[last + 1];
-            var level = new float[last + 1];
+            float[] film = m_drawFilm;
+            float[] level = m_drawLevel;
             for (int i = 0; i <= last; i++)
             {
                 float a = i / (float)last;

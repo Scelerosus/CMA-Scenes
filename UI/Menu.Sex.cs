@@ -178,7 +178,7 @@ namespace CMAScenes
             ResetButton(st, T("Reset everything about the sex", "Сбросить всё про секс"), () =>
                 ResetAll(Plugin.RideFrequency, Plugin.RideBounce, Plugin.RideGrind, Plugin.RideTilt, Plugin.RideSpring, Plugin.RideDepth, Plugin.RideHipsWork, Plugin.RideKeepHard, Plugin.RideEnterSpeed, Plugin.RideAimForward, Plugin.RideAimUp, Plugin.RideCamSteady, Plugin.RideFov,
                     Plugin.RideFeet, Plugin.RideLean, Plugin.RideFacing, Plugin.RideHeroShift, Plugin.RideHeroClearance,
-                    Plugin.RideWetShine, Plugin.RideWetRelief, Plugin.RideWetDepth, Plugin.RideWetStrings, Plugin.RideAutoAim, Plugin.RideClimax, Plugin.RideBuild, Plugin.RideWaves, Plugin.RideFlow, Plugin.RideMaxSpeed, Plugin.RideHandsFast, Plugin.RideLookAtHim, Plugin.RideLegs, Plugin.RideHandsOn, Plugin.RideHole, Plugin.RideAnalAimForward, Plugin.RideAnalAimUp, Plugin.CondomAuto, Plugin.CondomColor,
+                    Plugin.RideWetShine, Plugin.RideWetRelief, Plugin.RideWetDepth, Plugin.RideWetStrings, Plugin.RideAutoAim, Plugin.RideClimax, Plugin.RideBuild, Plugin.RideWaves, Plugin.RideFlow, Plugin.RideMaxSpeed, Plugin.RideLookAtHim, Plugin.RideLegs, Plugin.RideHole, Plugin.RideAnalAimForward, Plugin.RideAnalAimUp, Plugin.CondomAuto, Plugin.CondomColor,
                     Plugin.RideWarmUp, Plugin.RideListen, Plugin.RideTires, Plugin.RideStamina, Plugin.RideBreath, Plugin.RideFinish, Plugin.RideEndAfter, Plugin.RideHeMeets, Plugin.RideHeHolds, Plugin.RideWomb, Plugin.RideFeetAuto, Plugin.RideFlatFeet, Plugin.RideLead, Plugin.RideAlive,
                     Plugin.XRay, Plugin.XRayView, Plugin.XRayOpacity, Plugin.XRayInsetSize, Plugin.XRayInsetSide));
         }

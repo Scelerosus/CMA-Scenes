@@ -89,7 +89,6 @@ namespace CMAScenes
         internal static ConfigEntry<bool> RideNaturalArms;
         internal static ConfigEntry<KeyCode> XRayKey;
         internal static ConfigEntry<string> XRayView, XRayInsetSide;
-        internal static ConfigEntry<bool> XRayOwnCanal;
         internal static ConfigEntry<float> XRayOpacity, XRayInsetSize, XRayBelow, XRayAfter;
         internal static ConfigEntry<bool> XRayInBody;
         internal static ConfigEntry<bool> RideFlow;
@@ -97,7 +96,6 @@ namespace CMAScenes
         internal static ConfigEntry<bool> RideFeetAuto, RideHeHolds;
         internal static ConfigEntry<string> RideFinish;
         internal static ConfigEntry<bool> RideEndAfter;
-        internal static ConfigEntry<string> RideHandsOn;
         internal static ConfigEntry<string> RideLegs;
         internal static ConfigEntry<float> RideLean;
         internal static ConfigEntry<bool> CondomAuto;
@@ -123,7 +121,6 @@ namespace CMAScenes
         internal static ConfigEntry<float> RideGrind;
         internal static ConfigEntry<float> RideTilt;
         internal static ConfigEntry<float> RideMaxSpeed;
-        internal static ConfigEntry<bool> RideHandsFast;
         internal static ConfigEntry<bool> RideLookAtHim;
         internal static ConfigEntry<float> RideEnterSpeed;
         internal static ConfigEntry<bool> RideAutoAim;
@@ -238,7 +235,6 @@ namespace CMAScenes
             XRay = Config.Bind("XRay", "On", false, "The X-ray: during the sex her insides (as the game itself has them: her canal, her womb, her rectum), what of his penis is in them, and his semen in her as the game has it (filling her, and running out of her while the game lets it out) are shown. Switched by its key and in the window.");
             XRayKey = Config.Bind("XRay", "Key", KeyCode.U, "Key that switches the X-ray on and off.");
             XRayView = Config.Bind("XRay", "View", "Both", "What of the X-ray is shown: Through (her insides and his penis drawn over her body, wherever one looks from), Inset (a cut through her from front to back, in a frame at the side of the screen), Both, or Game (the game's own X-ray of her pelvis instead: its camera and its frame, switched on for the sex whatever level the agency has reached).");
-            XRayOwnCanal = Config.Bind("XRay", "OwnCanal2", false, "Through her body: while he is in her, draw a canal of the plugin's own round him instead of the game's (off: the game's canal, which stretches by itself; it hid the game's semen leaving her).");
             XRayOpacity = Config.Bind("XRay", "Opacity", 0.55f, "Through her body: how solid her insides are drawn, from 0.15 (a faint veil) to 1.");
             XRayInBody = Config.Bind("XRay", "InHerBody2", false, "Through her body: of what of him is in her, show only what her body hides (by the picture's depth). Used when her skin writes its depth. He is cut at her entrance either way (the setting below).");
             // (A key of its own: "BelowEntrance" was 3 cm, and drew him down onto his own belly. The old key is not read.)
@@ -255,7 +251,6 @@ namespace CMAScenes
             RideHeHolds = Config.Bind("Ride", "HeHolds", false, "He holds her: his hands take her by the hips and her bottom and he moves her on himself with his own hips, stroke by stroke; she lets him, her hands on his arms and chest.");
             RideFinish = Config.Bind("Ride", "Finish", "Free", "What she does as he nears coming (by the game's own pleasure of him): Free (nothing: she rides on), Edge (she all but stops, sitting on him, until he has cooled a little, again and again) or Together (she holds him back like that only until she is nearly there herself, then goes all out).");
             RideEndAfter = Config.Bind("Ride", "GetOffAfterHeComes", false, "After he has come in her she stays on him for a while, then gets off him by herself: the ride ends.");
-            RideHandsOn = Config.Bind("Ride", "HandsMode", "Auto", "Legacy setting retained for old configuration files; ride hand placement is now chosen by pose, balance and the HeHolds option.");
             RideLegs = Config.Bind("Ride", "Legs", "Feet", "Set by the chosen ride pose: Feet for Squatting, Cowgirl, Leaning back and Reverse; Knees for Kneeling, Astride and Over him.");
             RideLean = Config.Bind("Ride", "Lean", 40f, "How far she leans forward over you, in degrees.");
             // (His penis gets wet from her, always: the switch "Ride/Wet" is gone from the window and is not read any more.)
@@ -282,7 +277,6 @@ namespace CMAScenes
             RideGrind = Config.Bind("Ride", "Grind", 0.06f, "How far her hips rock forward and back, in metres.");
             RideTilt = Config.Bind("Ride", "Tilt", 9f, "How much her pelvis rocks with each stroke, in degrees.");
             RideMaxSpeed = Config.Bind("Ride", "MaxSpeed", 1.7f, "The most strokes per second she ever makes, whatever the speed, the preset, the rhythm and her arousal ask for: close to it everything is eased down so that it is never passed. A real woman on top does not keep up more than some one and a half to two strokes a second, and not for long.");
-            RideHandsFast = Config.Bind("Ride", "HandsAsideWhenFast", true, "When she rides faster than the speed that is set (the Fast preset, a quick spell of the rhythm, or her arousal), she puts her hands on the floor either side of him and takes her weight on them. Only facing him.");
             RideLookAtHim = Config.Bind("Ride", "LookAtHim", true, "While she rides she looks at the hero: her head and eyes are turned to his face, wherever the camera is (the game itself has her look at the camera, which in the free camera is not him).");
             RideEnterSpeed = Config.Bind("Ride", "EnterSpeed", 0.08f, "How fast she lowers herself onto him at the start, in metres a second.");
             RideAutoAim = Config.Bind("Ride", "AutoAim", true, "The aim corrects itself: her entrance is taken to be the ring her hole really opens by, as the game has it, followed as she moves, so that she comes down with it on his tip. The manual aim is used only with this off.");

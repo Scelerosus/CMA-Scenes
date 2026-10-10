@@ -8,6 +8,14 @@ the two must not run together. The old plugin is disabled in the game folder as 
 
 Build: `dotnet build CMAScenes.csproj -c Release -p:SkipInstall=true`, copy `bin\Release\CMAScenes.dll` when the game is closed.
 
+## 0.3.25 (2026-10-11) - maintenance and hot-path cleanup
+
+- Removed legacy hand settings that no longer selected contact points. Fast-hand state had still reduced fatigue despite no longer changing the hands; fatigue now follows the actual pose and pace.
+- Removed the optional plugin-made vaginal canal and its renderer switching. X-ray continues to draw the game's canal and its fluids.
+- Cached spine transforms and arm lengths for reach searches, avoiding repeated IL2CPP transform reads inside the bend loops.
+- Reused the small wetness curves across mask redraws instead of allocating three arrays each time.
+- Updated the README status and version. Built in Release; runtime animation and performance require observation in the game.
+
 ## 0.1.0 (2026-10-09) - forked from CMA Shake 0.53.5; NOT run in the game
 
 User's request: analyse CMA Shake and make a new mod with new functions, a choice of places for the sex in the office
