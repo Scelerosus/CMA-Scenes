@@ -24,7 +24,7 @@ namespace CMAScenes
     {
         public const string PluginGuid = "community.cma.scenes";
         public const string PluginName = "CMA Scenes";
-        public const string PluginVersion = "0.3.8";
+        public const string PluginVersion = "0.3.9";
 
         internal static ManualLogSource ModLog;
         internal static ConfigFile Cfg;

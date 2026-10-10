@@ -297,14 +297,14 @@ namespace CMAScenes
                 Vector3 torso = shoulders - pelvisBase;
                 Vector3 home = me.m_vulvaHomeValid ? new Vector3(me.m_vulvaHome.x, pelvisThen.y, me.m_vulvaHome.z) : pelvisThen;
                 float far = Mathf.Clamp(Vector3.Dot(me.m_heroChest.position - home, fwd), 0.2f, 0.6f);
-                float bestFar = 0.17f, bestLean = 26f;
+                float bestFar = 0.17f, bestLean = 0f;
                 bool found = false;
                 for (float f = far; f >= 0.17f && !found; f -= 0.03f)
                 {
                     Vector3 mid = home + fwd * f;
                     float top = me.HeroTopAt(mid);
                     mid.y = (float.IsNegativeInfinity(top) ? me.m_penisGoalBase.y + 0.02f : top) + 0.025f;
-                    for (float a = 0f; a <= 26f; a += 4f)
+                    for (float a = 0f; a <= 40f; a += 4f)
                     {
                         if ((me.SpineAt(w, right, leanSet, a, 0f, me.m_holeTilt, shoulders) - mid).sqrMagnitude <= armLen * armLen * 0.85f)
                         {
@@ -340,6 +340,12 @@ namespace CMAScenes
                     spot.y = (float.IsNegativeInfinity(top) ? me.m_penisGoalBase.y + 0.02f : top) + 0.025f;
                     chestSpot[i] = spot;
                 }
+                // (Where she cannot reach him by bending so far (40 deg), her palms stay on her thighs rather than wring her arms
+                // to reach: the weight of his chest goes to her thighs, eased over half a second.)
+                me.m_chestOk = Mathf.MoveTowards(me.m_chestOk, found ? 1f : 0f, dt / 0.5f);
+                float giveUp = onChest * (1f - me.m_chestOk);
+                onChest -= giveUp;
+                onThigh += giveUp;
                 // (Her back is bent by that much more, further down, with what bends her over him.)
                 chestBend = me.m_chestLean * onChest;
                 if (Time.unscaledTime >= me.m_chestLogAt)

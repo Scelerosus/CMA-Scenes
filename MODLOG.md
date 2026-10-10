@@ -170,3 +170,8 @@ radius = his thickness x1.1 + 4.5 mm, narrower at the entrance, closed in a dome
 (`neck = tip + axis * 8 mm`) instead of at the end of the game's short canal bones (6.5 cm). The game's own drawing of her canal (renderer of `VagInternal`)
 is switched off while it is on (restored in `GhostOff`). Out of her, or in her rectum, nothing changes. `XRay/OwnCanal` (default on) turns it off.
 Log: `X-ray: through her body: her canal is drawn round him`.
+
+## 0.3.9 (2026-10-10) - log of 0.3.8; NOT run in the game
+Log: with the bend to reach him capped at 26 deg (0.3.6) she "does not reach him anywhere" (hands aimed at 17 cm up him) while sitting high: wrists in strain 12-52,
+"80 deg palm up" flips = arms wrung as she moves. Now: bend up to 40 deg; where she still cannot reach him, `m_chestOk` falls to 0 over 0.5 s and the weight of
+"his chest" goes to her thighs (and `chestBend` to 0, the default of `bestLean` is 0) instead of aiming the hands at a point out of reach.
