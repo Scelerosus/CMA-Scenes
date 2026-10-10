@@ -8,6 +8,12 @@ the two must not run together. The old plugin is disabled in the game folder as 
 
 Build: `dotnet build CMAScenes.csproj -c Release -p:SkipInstall=true`, copy `bin\Release\CMAScenes.dll` when the game is closed.
 
+## 0.3.26 (2026-10-11) - smoother hand contact
+
+- The reachable point on each thigh is now solved continuously, so the palm does not move in 2 cm steps as the leg bends.
+- During hand-contact transitions the wrist is guided out of the thigh before arm IK runs, preventing it from crossing the leg mesh.
+- This changes only hand placement. Observe all ride poses in motion in the game to judge model-specific clearance.
+
 ## 0.3.25 (2026-10-11) - maintenance and hot-path cleanup
 
 - Removed legacy hand settings that no longer selected contact points. Fast-hand state had still reduced fatigue despite no longer changing the hands; fatigue now follows the actual pose and pace.

@@ -662,15 +662,7 @@ namespace CMAScenes
                 Vector3 shoulder = arm.upper.t.position;
                 float armLen = (arm.fore.t.position - shoulder).magnitude + (arm.end.t.position - arm.fore.t.position).magnitude;
                 float reach = armLen * 0.9f;
-                float part = 0.2f;
-                for (float tryPart = 0.62f; tryPart >= 0.2f; tryPart -= 0.02f)
-                {
-                    if ((Vector3.Lerp(hipJoint, knee, tryPart) + top * 0.085f - shoulder).sqrMagnitude <= reach * reach)
-                    {
-                        part = tryPart;
-                        break;
-                    }
-                }
+                float part = ThighReachPart(hipJoint, knee, top, shoulder, reach);
                 // (Never further down than her arm reached at the top of the last strokes: it settles there and stays.)
                 me.m_handPart[i] = part < me.m_handPart[i] ? Mathf.Lerp(me.m_handPart[i], part, 1f - Mathf.Exp(-dt / 0.15f)) : Mathf.Lerp(me.m_handPart[i], part, 1f - Mathf.Exp(-dt / 4f));
                 // The wrist must clear the thigh's skin and the thickness of her palm. The old 8.5 cm
@@ -813,6 +805,7 @@ namespace CMAScenes
                 {
                     target -= layAlong.normalized * 0.03f;
                 }
+                target = ClearThigh(target, hipJoint, knee, top, outward);
                 // How her hand lies, should her arms be posed as CMA Shake posed them. On him or on the floor: flat, palm down,
                 // fingers toward his head and a little inward. (Beside him her fingers point ahead and a little outward; on him,
                 // a little inward; behind her on his thighs they point back along them, toward his feet.)

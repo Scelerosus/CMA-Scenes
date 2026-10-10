@@ -200,6 +200,53 @@ namespace CMAScenes
         // and her hands, which are on him, stay where they are.
         private float m_overBend, m_sideBend;
 
+        // Furthest point along the thigh that the arm can reach, found continuously instead of in 2 cm steps.
+        private static float ThighReachPart(Vector3 hip, Vector3 knee, Vector3 top, Vector3 shoulder, float reach)
+        {
+            Vector3 along = knee - hip;
+            Vector3 from = hip + top * 0.085f - shoulder;
+            float a = Vector3.Dot(along, along);
+            if (a < 1e-8f)
+            {
+                return 0.2f;
+            }
+            float b = Vector3.Dot(from, along);
+            float c = Vector3.Dot(from, from) - reach * reach;
+            float discriminant = b * b - a * c;
+            if (discriminant < 0f)
+            {
+                return 0.2f;
+            }
+            float root = Mathf.Sqrt(discriminant);
+            float first = (-b - root) / a, last = (-b + root) / a;
+            return first <= 0.62f && last >= 0.2f ? Mathf.Clamp(last, 0.2f, 0.62f) : 0.2f;
+        }
+
+        // Keep the wrist outside the thigh when hand contacts blend across it. The correction follows the
+        // thigh's upper and outer surface, so a contact does not jump through the leg on its way elsewhere.
+        private static Vector3 ClearThigh(Vector3 wrist, Vector3 hip, Vector3 knee, Vector3 top, Vector3 outward)
+        {
+            Vector3 along = knee - hip;
+            float lengthSq = along.sqrMagnitude;
+            if (lengthSq < 1e-8f)
+            {
+                return wrist;
+            }
+            float part = Mathf.Clamp01(Vector3.Dot(wrist - hip, along) / lengthSq);
+            Vector3 centre = hip + along * part;
+            Vector3 delta = wrist - centre;
+            float radius = Mathf.Lerp(0.135f, 0.105f, part);
+            if (delta.sqrMagnitude >= radius * radius)
+            {
+                return wrist;
+            }
+            Vector3 direction = (top + outward * 0.5f).normalized;
+            float projection = Vector3.Dot(delta, direction);
+            float travel = -projection + Mathf.Sqrt(Mathf.Max(0f,
+                projection * projection + radius * radius - delta.sqrMagnitude));
+            return wrist + direction * travel;
+        }
+
         private float OverBend(Woman w, Vector3 right, float lean, float arch, float tilt, float dt)
         {
             if (w.arms[0] == null || w.arms[1] == null || !HeroShoulderSpot(-right, out Vector3 left) || !HeroShoulderSpot(right, out Vector3 other))
