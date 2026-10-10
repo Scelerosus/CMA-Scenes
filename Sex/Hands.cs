@@ -196,13 +196,54 @@ namespace CMAScenes
             return BendToReach(w, right, lean, arch, tilt, dt, 0.5f * (left + other), ref m_overBend);
         }
 
-        // Where her hand goes on the floor beside him, on the side that is given: a little way up him from her hips,
-        // clear of his body.
+        // Where her palm rests on the support beside his waist, clear of his body. On a narrow
+        // bench bring the contact onto its edge instead of letting her hand drop through it.
         private Vector3 SideSpot(Vector3 from, Vector3 fwd, Vector3 outward)
         {
-            Vector3 spot = from + fwd * 0.3f + outward * 0.32f;
-            spot.y = HeroShoulderSpot(outward, out Vector3 behind) ? behind.y : m_rideFloorY + 0.02f;
+            Vector3 spot = from + fwd * 0.27f + outward * 0.32f;
+            if (PlaceDrop(spot) > 0.02f)
+            {
+                spot = PlaceOnto(spot);
+            }
+            spot.y = m_rideFloorY + 0.025f;
             return spot;
+        }
+
+        // The midpoint between the palms understates the reach by the whole width between her hands.
+        // Find one bend that lets both arms reach their own side of him through the full stroke.
+        private float BendToReachSides(Woman w, Vector3 right, float lean, float arch, float tilt, float dt,
+            Vector3 left, Vector3 other)
+        {
+            if (w.arms[0] == null || w.arms[1] == null)
+            {
+                return m_sideBend;
+            }
+            float best = 0f, bestRatio = float.MaxValue;
+            for (float e = 0f; e <= 110f; e += 3f)
+            {
+                float ratio = 0f;
+                for (int i = 0; i < 2; i++)
+                {
+                    Limb arm = w.arms[i];
+                    Vector3 shoulder = arm.upper.t.position;
+                    float reach = (arm.fore.t.position - shoulder).magnitude +
+                        (arm.end.t.position - arm.fore.t.position).magnitude;
+                    float distance = (SpineAt(w, right, lean, e, arch, tilt, shoulder) -
+                        (i == 0 ? left : other)).magnitude;
+                    ratio = Mathf.Max(ratio, distance / Mathf.Max(0.01f, reach));
+                }
+                if (ratio < bestRatio)
+                {
+                    bestRatio = ratio;
+                    best = e;
+                }
+                if (ratio <= 0.94f)
+                {
+                    break;
+                }
+            }
+            m_sideBend = Mathf.Lerp(m_sideBend, best, 1f - Mathf.Exp(-dt / 0.5f));
+            return m_sideBend;
         }
 
         // How far her back has to bend, over what the lean bends it, for her shoulders to come within an arm of a place.

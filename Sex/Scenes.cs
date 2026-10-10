@@ -65,7 +65,7 @@ namespace CMAScenes
             }
             else if (string.Equals(pose, "Over him", StringComparison.OrdinalIgnoreCase))
             {
-                want = "HisChest";
+                want = "HisSides";
             }
             else if (string.Equals(pose, "Leaning back", StringComparison.OrdinalIgnoreCase) || lean < -8f)
             {

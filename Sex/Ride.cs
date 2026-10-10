@@ -272,6 +272,7 @@ namespace CMAScenes
                 handsOn = "Thighs";
             }
             else if (me.m_holdW > 0.5f && !herBack
+                && !string.Equals(poseName, "Over him", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(poseName, "Leaning back", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(poseName, "Squatting", StringComparison.OrdinalIgnoreCase))
             {
@@ -291,9 +292,10 @@ namespace CMAScenes
             // (Or on the floor either side of his head, as she lies over him; with no head of his to go by, on his chest.)
             bool floorThere = !herBack && me.m_heroReady && me.m_heroHead != null;
             float onFloor = Glide(w, G.RideHandsFloor, floorThere && floorNow ? 1f : 0f);
-            // Keep the chosen contact when the pace changes; moving both palms sideways every time she
-            // speeds up made them sweep across him while her feet and knees stayed planted.
-            float onSide = Glide(w, G.RideHandsSide, 0f);
+            // Over him keeps both palms planted beside his torso at every pace. Changing contact on a
+            // speed threshold made them sweep sideways while her knees stayed in place.
+            float onSide = Glide(w, G.RideHandsSide,
+                floorThere && riding && string.Equals(handsOn, "HisSides", StringComparison.OrdinalIgnoreCase) ? 1f : 0f);
             onChest *= 1f - onSide;
             onUnder *= 1f - onSide;
             onFloor *= 1f - onSide;
@@ -432,8 +434,10 @@ namespace CMAScenes
             overBend = Mathf.Max(overBend, chestBend * poseW);
             if (onSide > 0.001f)
             {
-                Vector3 between2 = 0.5f * (me.SideSpot(sideFrom, fwd, -right) + me.SideSpot(sideFrom, fwd, right));
-                overBend = Mathf.Max(overBend, me.BendToReach(w, right, lean, arch, holeTilt, dt, between2, ref me.m_sideBend) * onSide * poseW);
+                Vector3 leftSide = me.SideSpot(sideFrom, fwd, -right);
+                Vector3 rightSide = me.SideSpot(sideFrom, fwd, right);
+                overBend = Mathf.Max(overBend,
+                    me.BendToReachSides(w, right, lean, arch, holeTilt, dt, leftSide, rightSide) * onSide * poseW);
             }
             // (Her pelvis tips forward with it, at her hip joints; where her back does not hang from her pelvis it is
             // turned by as much itself, to stay in one line with it.)

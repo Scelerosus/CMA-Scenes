@@ -617,8 +617,8 @@ namespace CMAScenes
                 Poses.Apply(set[next], current);
             }
             Tip(set == Poses.Ride
-                ? T("Each position sets her legs, facing and lean; her hands then change with her pleasure. Cowgirl uses her thighs or his chest; Astride her ribs or his chest; Over him his chest; Leaning back his thighs; Reverse her own hips or thighs; Squatting her thighs; Kneeling her thighs or his chest. In Cowgirl, Astride, Over him and Kneeling she rests on his forearms when he holds her.",
-                    "Каждая поза задаёт ноги, разворот и наклон; руки затем меняются с её удовольствием. Наездница: свои бёдра или его грудь; Верхом: свои рёбра или его грудь; Над ним: его грудь; Откинувшись: его бёдра; Спиной: свой таз или бёдра; На корточках: свои бёдра; На коленях: свои бёдра или его грудь. В позах Наездница, Верхом, Над ним и На коленях она опирается на его предплечья, когда он держит её.")
+                ? T("Each position sets her legs, facing and lean; her hands then change with her pleasure. Cowgirl uses her thighs or his chest; Astride her ribs or his chest; Over him plants her palms beside his torso; Leaning back uses his thighs; Reverse uses her own hips or thighs; Squatting uses her thighs; Kneeling uses her thighs or his chest. In Cowgirl, Astride and Kneeling she rests on his forearms when he holds her.",
+                    "Каждая поза задаёт ноги, разворот и наклон; руки затем меняются с её удовольствием. Наездница: свои бёдра или его грудь; Верхом: свои рёбра или его грудь; Над ним: ладони по бокам его корпуса; Откинувшись: его бёдра; Спиной: свой таз или бёдра; На корточках: свои бёдра; На коленях: свои бёдра или его грудь. В позах Наездница, Верхом и На коленях она опирается на его предплечья, когда он держит её.")
                 : T("A ready-made pose: it sets several of the pose settings at once, and she moves into it smoothly. You can still adjust each of them after.",
                     "Готовая поза: задаёт сразу несколько настроек позы, и она плавно в неё переходит. После этого каждую можно подправить отдельно."));
         }
