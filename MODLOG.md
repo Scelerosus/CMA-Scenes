@@ -149,3 +149,11 @@ formula: the palm of her LEFT hand was taken for its back (handPalm sign in Hand
 palm up / twisted and its fist never opened. Now `FingersFind` checks the average curl of the resting fingers against the palm and swaps the
 palm if it is below -12 deg (log: "the palm is the other side, swapped"). Holds for his hands too. If the left wrist still looks wrong, the
 cause is elsewhere (neutral of the wrist turn, `ArmSolve`).
+
+## 0.3.6 (2026-10-10) - screenshots of 0.3.5; NOT run in the game
+- Hands on his chest followed her hips' yaw (`right`/`fwd` from her hip joints) while she grinds: palms swept over him. Now along his body
+  axis (`m_heroFwd`) and across it, where it agrees with her facing (Ride.cs, chestSpot).
+- The extra bend of her back to reach his chest was searched up to 90 deg (and defaulted to 90 when no place was reached): she folded over him
+  with her head at his face. Now at most 26 deg; farther than that her palms go lower on him instead.
+- Reach for the palms 0.8 -> 0.85 of arm length squared; the hands rise toward his chest in 1.2 s (was 3 s).
+Not done: the bend from the stroke itself (`lean += 70 * RideHipsWork * risen`, `arch`), which adds to this when she speeds up.
