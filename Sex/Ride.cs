@@ -226,7 +226,9 @@ namespace CMAScenes
             // Where her hands are: on her own thighs, under her breasts, or on his chest (then she leans over him as far as
             // it takes to reach it; with her back to him his chest is behind her, and her hands stay on her thighs). Each
             // place has a weight that glides, so changing it moves her arms there.
-            string handsOn = Plugin.RideHandsOn.Value ?? "";
+            // (Her hands are always her own: where they go follows her pleasure and the pace, Scenes.cs AutoHands. The old setting
+            // "Ride/HandsMode" is no longer read, and the poses no longer ask for a place.)
+            string handsOn = "Auto";
             bool herBack = string.Equals(Plugin.RideFacing.Value, "Away", StringComparison.OrdinalIgnoreCase);
             if (string.Equals(handsOn, "Auto", StringComparison.OrdinalIgnoreCase))
             {

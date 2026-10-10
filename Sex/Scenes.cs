@@ -49,7 +49,8 @@ namespace CMAScenes
             }
             else if (hers)
             {
-                want = "Shoulders";
+                // (In her orgasm she holds on to his chest: no longer folded over him to the floor by his shoulders.)
+                want = "HisChest";
             }
             else if (his)
             {
@@ -59,7 +60,7 @@ namespace CMAScenes
             {
                 want = "Behind";
             }
-            else if (m_herWet > 0.45f || lean > 26f)
+            else if (m_herPleasure > 0.35f || m_herWet > 0.6f || lean > 26f)
             {
                 want = "HisChest";
             }

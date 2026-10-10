@@ -157,3 +157,9 @@ cause is elsewhere (neutral of the wrist turn, `ArmSolve`).
   with her head at his face. Now at most 26 deg; farther than that her palms go lower on him instead.
 - Reach for the palms 0.8 -> 0.85 of arm length squared; the hands rise toward his chest in 1.2 s (was 3 s).
 Not done: the bend from the stroke itself (`lean += 70 * RideHipsWork * risen`, `arch`), which adds to this when she speeds up.
+
+## 0.3.7 (2026-10-10) - user's request: no hand settings; NOT run in the game
+Menu: the "Her hands" row and the "Lean toward him" slider are gone (the fold is now "Her legs"). `Ride/HandsMode` is not read any more: her hands
+are always `AutoHands` (Scenes.cs): thighs while she sits quietly (her pleasure < 0.35, not wet), his chest from a pleasure of 0.35 or when the pose leans
+her over him, behind her when the pose leans back, his chest in both orgasms (was: floor by his shoulders in hers: it folded her over him).
+`Ride/Lean` stays as the pose presets' own value (Cowgirl 18, Astride 30, ...), unchanged, no longer in the menu.
