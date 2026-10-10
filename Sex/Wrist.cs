@@ -92,6 +92,12 @@ namespace CMAScenes
                             continue;
                         }
                         float cost = LayHand(side, f, hingeAxis.normalized, back, fingers, out _, out _) + (ang / 70f) * (ang / 70f) * 0.55f;
+                        if (arm.swivelHas)
+                        {
+                            // (Her elbow keeps to the place it is in: no jump from one turn of her arm about its axis to another, which
+                            // was her arm wringing itself round as she moved.)
+                            cost += 0.35f * Sq((ang - arm.swivel) / 30f);
+                        }
                         if (cost < bestCost)
                         {
                             bestCost = cost;
@@ -391,7 +397,10 @@ namespace CMAScenes
         private static bool IsFinger(string name, string key)
         {
             string n = (name ?? "").ToLowerInvariant();
-            return n.Contains(key) || (key == "pinky" && n.Contains("little"));
+            // (CC rigs of this game: CC_Base_Finger00.L is the thumb, Finger1x the first finger, 2x the middle, 3x the ring,
+            // 4x the little finger; x counts the joints, and a "Nub" ends the chain.)
+            string num = key == "index" ? "finger1" : key == "mid" ? "finger2" : key == "ring" ? "finger3" : key == "pinky" ? "finger4" : "";
+            return n.Contains(key) || (key == "pinky" && n.Contains("little")) || n.Contains(num);
         }
 
         // The bones of four fingers of a hand (first, middle, ring, little), each from its root toward its tip, by their

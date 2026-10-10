@@ -130,3 +130,10 @@ Log: hands on him (Astride/Cowgirl): both wrists pinned at pronation 85 deg and 
 (sorted from the wrist outward), and logs the names under the hand when it still finds nothing (`Arms: the bones under ...`).
 Neutral of the wrist turn (LayHand) was re-derived by hand: signs for both arms are consistent; left hand of the game's own pose
 reads 125 deg palm up against 1 deg on the right, not explained. Wrist diagnostics (`wrist as laid`, every 6 s) stay in.
+
+## 0.3.3 (2026-10-10) - from the 0.3.2 log; NOT run in the game
+Log: finger bones are `CC_Base_Finger{0..4}{0..2}.L/R` (0 thumb, 1 first, 2 middle, 3 ring, 4 little finger): `IsFinger` knows them now.
+Hands on his chest: the left wrist went to strain 18-33 (pronation pinned at 85) while the right stayed at 3: the elbow search jumped
+between two turns of the arm about its axis (neutral of the left wrist 0.35,0,0.94 then 1.0,0,-0.05) = the arm wringing in motion.
+`ArmSolve` now charges for leaving the swivel it is at (0.35 * ((ang - swivel)/30)^2). Not touched: her back bends 20-28 deg further
+to reach his chest 37 cm up (`Ride: her hands on him`); the wrist wants that much lean (less lean = more extension).
