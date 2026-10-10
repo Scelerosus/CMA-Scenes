@@ -546,6 +546,7 @@ namespace CMAScenes
                         GhostAdd(m_xVag, from, new Color(0.96f, 0.5f, 0.58f), alpha, false, "her vagina");
                         GhostAdd(m_xAnus, from, new Color(0.88f, 0.5f, 0.44f), alpha, true, "her rectum");
                         WombMake(from, Mathf.Min(1f, alpha + 0.2f));
+                        CanalMake(from, alpha);
                         ShadeMake(from, dim);
                         FlowMake(from);
                         m_xInBody = Plugin.XRayInBody.Value && SkinWritesDepth(w);
@@ -580,6 +581,11 @@ namespace CMAScenes
                             Filled(g.ghosts[k], g.tint, g.alpha, fill);
                         }
                     }
+                    if (!g.anal && Plugin.XRayOwnCanal.Value && g.wasEnabled && g.renderer.enabled == m_xCanalOn)
+                    {
+                        // (Her canal, the game's drawing of it: not while the plugin's own is round him.)
+                        g.renderer.enabled = !m_xCanalOn;
+                    }
                     Material now = g.renderer.sharedMaterial;
                     if (now != null && g.first != null && now.Pointer == g.first.Pointer)
                     {
@@ -604,6 +610,7 @@ namespace CMAScenes
                 SemenStep(m_xGhostFrom, dt);
                 HimStep(Mathf.Min(1f, alpha + 0.3f));
                 TeatGhostStep(Mathf.Min(1f, alpha + 0.3f));
+                CanalStep(Mathf.Min(1f, alpha));
                 WombStep(w);
                 ShadeStep(w);
                 FlowStep(dt);
@@ -724,6 +731,10 @@ namespace CMAScenes
                         {
                             g.renderer.enabled = false;
                         }
+                        else if (!g.renderer.enabled)
+                        {
+                            g.renderer.enabled = true;
+                        }
                         if (g.layerWas >= 0)
                         {
                             g.renderer.gameObject.layer = g.layerWas;
@@ -742,6 +753,7 @@ namespace CMAScenes
                 }
             }
             m_xGhosts.Clear();
+            CanalDrop();
             foreach (XHim h in m_xHim)
             {
                 try

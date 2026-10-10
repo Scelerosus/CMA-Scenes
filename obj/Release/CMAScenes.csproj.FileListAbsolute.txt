@@ -1,0 +1,10 @@
+C:\Users\Scelerosus\source\repos\CMAScenes\bin\Release\CMAScenes.deps.json
+C:\Users\Scelerosus\source\repos\CMAScenes\bin\Release\CMAScenes.dll
+C:\Users\Scelerosus\source\repos\CMAScenes\obj\Release\CMAScenes.csproj.AssemblyReference.cache
+C:\Users\Scelerosus\source\repos\CMAScenes\obj\Release\CMAScenes.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Scelerosus\source\repos\CMAScenes\obj\Release\CMAScenes.AssemblyInfoInputs.cache
+C:\Users\Scelerosus\source\repos\CMAScenes\obj\Release\CMAScenes.AssemblyInfo.cs
+C:\Users\Scelerosus\source\repos\CMAScenes\obj\Release\CMAScenes.csproj.CoreCompileInputs.cache
+C:\Users\Scelerosus\source\repos\CMAScenes\obj\Release\CMAScenes.dll
+C:\Users\Scelerosus\source\repos\CMAScenes\obj\Release\refint\CMAScenes.dll
+C:\Users\Scelerosus\source\repos\CMAScenes\obj\Release\ref\CMAScenes.dll

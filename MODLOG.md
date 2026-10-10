@@ -122,3 +122,60 @@ prefix on TryEyacular only shrank the amount, not the count), and the game lets 
   (limited by his own skin surface) keeps his belly clean.
 - Hands: not touched (no screenshot of 0.3.0). Log shows "her left/right hand cannot reach where it is to go (8-21 cm past her arm)"
   in Cowgirl/Astride: hand rests on her thigh instead.
+
+## 0.3.2 (2026-10-10) - from the 0.3.1 log (wrist diagnostics); NOT run in the game
+Log: hands on him (Astride/Cowgirl): both wrists pinned at pronation 85 deg and extension 63-75 deg, strain 2.5-4 all the while (at rest 0.06);
+`Arms: her/his fingers: not found by name (0 of 4)`: the fingers stay as clawed as the game's animation has them (screenshot of
+2026-10-10: curled claws on his belly). Done: `FingersFind` falls back to the bones of a finger by name when they are not nested
+(sorted from the wrist outward), and logs the names under the hand when it still finds nothing (`Arms: the bones under ...`).
+Neutral of the wrist turn (LayHand) was re-derived by hand: signs for both arms are consistent; left hand of the game's own pose
+reads 125 deg palm up against 1 deg on the right, not explained. Wrist diagnostics (`wrist as laid`, every 6 s) stay in.
+
+## 0.3.3 (2026-10-10) - from the 0.3.2 log; NOT run in the game
+Log: finger bones are `CC_Base_Finger{0..4}{0..2}.L/R` (0 thumb, 1 first, 2 middle, 3 ring, 4 little finger): `IsFinger` knows them now.
+Hands on his chest: the left wrist went to strain 18-33 (pronation pinned at 85) while the right stayed at 3: the elbow search jumped
+between two turns of the arm about its axis (neutral of the left wrist 0.35,0,0.94 then 1.0,0,-0.05) = the arm wringing in motion.
+`ArmSolve` now charges for leaving the swivel it is at (0.35 * ((ang - swivel)/30)^2). Not touched: her back bends 20-28 deg further
+to reach his chest 37 cm up (`Ride: her hands on him`); the wrist wants that much lean (less lean = more extension).
+
+## 0.3.4 (2026-10-10) - diagnostics only
+0.3.3 log: fingers found (`Finger10..40 (3)`), swivel steady and mirrored left/right (strain 1-2 on his chest). Screenshots: her right hand lies
+flat on his belly; her left hand hangs at her crotch as a clenched fist with a bent wrist ("cannot reach: rests on her thigh"). New log line
+every 6 s: `Arms: ... fingers curled toward the palm, deg, by joint` (to see whether the left fingers are straightened at all).
+
+## 0.3.5 (2026-10-10) - found by the finger log of 0.3.4; NOT run in the game
+Her left fingers read as curled -38/-33 deg toward "the palm" (never changed: straightening only acts above 8 deg), the right +35/+37 by the same
+formula: the palm of her LEFT hand was taken for its back (handPalm sign in HandFlat is wrong for that rig), so the whole left hand was laid
+palm up / twisted and its fist never opened. Now `FingersFind` checks the average curl of the resting fingers against the palm and swaps the
+palm if it is below -12 deg (log: "the palm is the other side, swapped"). Holds for his hands too. If the left wrist still looks wrong, the
+cause is elsewhere (neutral of the wrist turn, `ArmSolve`).
+
+## 0.3.6 (2026-10-10) - screenshots of 0.3.5; NOT run in the game
+- Hands on his chest followed her hips' yaw (`right`/`fwd` from her hip joints) while she grinds: palms swept over him. Now along his body
+  axis (`m_heroFwd`) and across it, where it agrees with her facing (Ride.cs, chestSpot).
+- The extra bend of her back to reach his chest was searched up to 90 deg (and defaulted to 90 when no place was reached): she folded over him
+  with her head at his face. Now at most 26 deg; farther than that her palms go lower on him instead.
+- Reach for the palms 0.8 -> 0.85 of arm length squared; the hands rise toward his chest in 1.2 s (was 3 s).
+Not done: the bend from the stroke itself (`lean += 70 * RideHipsWork * risen`, `arch`), which adds to this when she speeds up.
+
+## 0.3.7 (2026-10-10) - user's request: no hand settings; NOT run in the game
+Menu: the "Her hands" row and the "Lean toward him" slider are gone (the fold is now "Her legs"). `Ride/HandsMode` is not read any more: her hands
+are always `AutoHands` (Scenes.cs): thighs while she sits quietly (her pleasure < 0.35, not wet), his chest from a pleasure of 0.35 or when the pose leans
+her over him, behind her when the pose leans back, his chest in both orgasms (was: floor by his shoulders in hers: it folded her over him).
+`Ride/Lean` stays as the pose presets' own value (Cowgirl 18, Astride 30, ...), unchanged, no longer in the menu.
+
+## 0.3.8 (2026-10-10) - user: half of his penis in her canal froze against the womb; NOT run in the game
+New `XRay/XRayCanal.cs`: while he is in her vagina the X-ray draws a canal of the plugin's own round him (tube from her entrance along his axis to his tip,
+radius = his thickness x1.1 + 4.5 mm, narrower at the entrance, closed in a dome past his tip), and `WombStep` puts the womb on his tip
+(`neck = tip + axis * 8 mm`) instead of at the end of the game's short canal bones (6.5 cm). The game's own drawing of her canal (renderer of `VagInternal`)
+is switched off while it is on (restored in `GhostOff`). Out of her, or in her rectum, nothing changes. `XRay/OwnCanal` (default on) turns it off.
+Log: `X-ray: through her body: her canal is drawn round him`.
+
+## 0.3.9 (2026-10-10) - log of 0.3.8; NOT run in the game
+Log: with the bend to reach him capped at 26 deg (0.3.6) she "does not reach him anywhere" (hands aimed at 17 cm up him) while sitting high: wrists in strain 12-52,
+"80 deg palm up" flips = arms wrung as she moves. Now: bend up to 40 deg; where she still cannot reach him, `m_chestOk` falls to 0 over 0.5 s and the weight of
+"his chest" goes to her thighs (and `chestBend` to 0, the default of `bestLean` is 0) instead of aiming the hands at a point out of reach.
+
+## 0.3.10 (2026-10-10) - user: the plugin's canal hid the game's semen leaving her
+`XRay/OwnCanal` -> new key `OwnCanal2`, default off: the game's own canal is drawn again (it stretches round him by itself); the plugin's canal and the
+womb on his tip (0.3.8) are only with the setting on.

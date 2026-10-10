@@ -132,16 +132,11 @@ namespace CMAScenes
                 T("On: no hand is needed. She comes up off him and it rolls onto him by itself.", "Включено: рука не нужна — она приподнимается, и презерватив раскатывается сам."));
             CardEnd();
 
-            if (FoldBegin(st, "ride.body", T("Her pose in detail", "Её поза подробно"), T("hands, legs, lean", "руки, ноги, наклон"), false))
+            if (FoldBegin(st, "ride.body", T("Her legs", "Её ноги"), T("legs", "ноги"), false))
             {
-                ChoiceRow(st, T("Her hands", "Её руки"), new[] { T("She finds it", "Сама"), T("On her thighs", "На своих бёдрах"), T("Under her breasts", "Под грудью"), T("On his chest", "На его груди"), T("By his shoulders", "У его плеч"), T("Back on his thighs", "Сзади на его бёдрах") }, new[] { "Auto", "Thighs", "UnderBreasts", "HisChest", "Shoulders", "Behind" }, Plugin.RideHandsOn, 104f,
-                    T("Where her hands are. She finds it: she holds on to him where it suits the moment (his chest, his belly, his shoulders; in her orgasm she takes hold of him and pulls herself to him). On his chest: as far up him as she reaches. By his shoulders: on the floor just past them, and she bends over him to reach it. Back on his thighs: she leans back and props herself on them. With her back to him her hands stay on her own thighs.", "Где её руки. «Сама»: держится за него там, где удобнее в этот момент (его грудь, живот, плечи; в оргазме хватается за него и притягивается к нему). «На его груди»: так высоко, как дотягивается. «У его плеч»: на полу сразу за ними, и она наклоняется над ним. «Сзади на его бёдрах»: откидывается назад и опирается на них. Спиной к нему руки остаются на своих бёдрах."),
-                    new[] { "pose.cowgirl", "pose.cowgirl", "hands.under-breasts", "pose.astride", "pose.over-him", "pose.leaning-back" });
                 ChoiceRow(st, T("Her legs", "Её ноги"), new[] { T("Squatting", "На корточках"), T("Kneeling", "На коленях") }, new[] { "Feet", "Knees" }, Plugin.RideLegs, 130f,
                     T("Squatting: she is on her feet over him. Kneeling: she is astride him, her shins on the floor either side of him (it tires her less).", "На корточках: стоит на ступнях над ним. На коленях: сидит верхом, голени на полу по бокам от него (так она меньше устаёт)."),
                     new[] { "pose.cowgirl", "legs.knees" });
-                Slider(st, T("Lean toward him", "Наклон к нему"), Plugin.RideLean, -25f, 60f, "0", "°", 1f,
-                    T("How far she leans forward over him as she sits. Below zero she leans back.", "Насколько она наклонена к нему, когда сидит. Меньше нуля — откинута назад."));
             }
             CardEnd();
 

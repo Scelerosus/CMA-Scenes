@@ -44,6 +44,7 @@ namespace CMAScenes
     {
         // (Degrees, from the hand in line with its forearm, thumb up. A forearm turns the palm down some 85 and up some 80;
         // a wrist bends back some 75 and forward some 70, and sideways 20 toward the thumb and 30 toward the little finger.)
+        private static readonly float[] s_wristLogAt = new float[2], s_fingerLogAt = new float[2];
         private const float PronateMost = 85f, SupinateMost = 80f, ExtendMost = 75f, FlexMost = 70f, RadialMost = 20f, UlnarMost = 30f;
 
         // Her arm put with its hand at "target", her elbow toward "pole" or round from it as her wrist asks, and her hand
@@ -91,6 +92,12 @@ namespace CMAScenes
                             continue;
                         }
                         float cost = LayHand(side, f, hingeAxis.normalized, back, fingers, out _, out _) + (ang / 70f) * (ang / 70f) * 0.55f;
+                        if (arm.swivelHas)
+                        {
+                            // (Her elbow keeps to the place it is in: no jump from one turn of her arm about its axis to another, which
+                            // was her arm wringing itself round as she moved.)
+                            cost += 0.35f * Sq((ang - arm.swivel) / 30f);
+                        }
                         if (cost < bestCost)
                         {
                             bestCost = cost;
@@ -155,6 +162,17 @@ namespace CMAScenes
                 }
             }
             LayHand(side, along, hinge, back.normalized, wish.normalized, out Vector3 fg, out Vector3 bk);
+            if (hinge.sqrMagnitude > 0.5f && Time.unscaledTime >= s_wristLogAt[side & 1])
+            {
+                // (For the record, every few seconds: how far each wrist is turned and bent, to check the neutral it is counted from.)
+                s_wristLogAt[side & 1] = Time.unscaledTime + 6f;
+                Vector3 neutral = side == 1 ? -hinge : hinge;
+                float turn = WristTurn(along, neutral, bk);
+                float pron = side == 1 ? turn : -turn;
+                float ext = -Mathf.Asin(Mathf.Clamp(Vector3.Dot(along, bk), -1f, 1f)) * Mathf.Rad2Deg;
+                float cost = LayHand(side, along, hinge, back.normalized, wish.normalized, out Vector3 _, out Vector3 _);
+                Plugin.ModLog.LogInfo($"Arms: {arm.who} {(side == 0 ? "left" : "right")} wrist as laid: {Mathf.Abs(pron):F0} deg {(pron >= 0f ? "palm down" : "palm up")} from thumb-up (neutral {neutral.x:F2} {neutral.y:F2} {neutral.z:F2}, forearm {along.x:F2} {along.y:F2} {along.z:F2}), bent {ext:F0} deg, strain {cost:F2}.");
+            }
             Quaternion own = Quaternion.LookRotation(arm.handFingers, -arm.handPalm);
             Quaternion want = Quaternion.LookRotation(fg, bk) * Quaternion.Inverse(own);
             Quaternion handNew = Quaternion.Slerp(hand.rotation, want, w);
@@ -379,7 +397,10 @@ namespace CMAScenes
         private static bool IsFinger(string name, string key)
         {
             string n = (name ?? "").ToLowerInvariant();
-            return n.Contains(key) || (key == "pinky" && n.Contains("little"));
+            // (CC rigs of this game: CC_Base_Finger00.L is the thumb, Finger1x the first finger, 2x the middle, 3x the ring,
+            // 4x the little finger; x counts the joints, and a "Nub" ends the chain.)
+            string num = key == "index" ? "finger1" : key == "mid" ? "finger2" : key == "ring" ? "finger3" : key == "pinky" ? "finger4" : "";
+            return n.Contains(key) || (key == "pinky" && n.Contains("little")) || n.Contains(num);
         }
 
         // The bones of four fingers of a hand (first, middle, ring, little), each from its root toward its tip, by their
@@ -428,6 +449,28 @@ namespace CMAScenes
                         bones.Add(new RotSlot(next));
                         at = next;
                     }
+                    if (bones.Count < 2)
+                    {
+                        // (Not nested: the bones of this finger by their names, from the one nearest the wrist outward.)
+                        var same = new List<Transform>();
+                        for (int c = 0; under != null && c < under.Length; c++)
+                        {
+                            if (under[c] != null && under[c] != hand && IsFinger(under[c].name, key))
+                            {
+                                same.Add(under[c]);
+                            }
+                        }
+                        same.Sort((p, q) => (p.position - hand.position).sqrMagnitude.CompareTo((q.position - hand.position).sqrMagnitude));
+                        if (same.Count >= 2)
+                        {
+                            bones = new List<RotSlot>();
+                            for (int k = 0; k < same.Count && k < 3; k++)
+                            {
+                                bones.Add(new RotSlot(same[k]));
+                            }
+                            root = same[0];
+                        }
+                    }
                     if (bones.Count >= 2)
                     {
                         foreach (RotSlot b in bones)
@@ -441,6 +484,46 @@ namespace CMAScenes
                 if (chains.Count >= 3)
                 {
                     arm.fingers = chains.ToArray();
+                }
+                if (arm.fingers != null && arm.handOk)
+                {
+                    // Which side of her hand is the palm: fingers at rest curl toward it. Where they curl the other way by some
+                    // degrees on average, the palm was taken for the back of the hand (her left hand was: its fingers read as
+                    // curled -38 deg while they were clenched in a fist), and the two are swapped here.
+                    Vector3 palm = (hand.rotation * arm.handPalm).normalized, ahead = (hand.rotation * arm.handFingers).normalized;
+                    float sum = 0f;
+                    int n = 0;
+                    foreach (RotSlot[] f in arm.fingers)
+                    {
+                        for (int j = 0; j + 1 < f.Length; j++)
+                        {
+                            Vector3 from = j == 0 ? ahead : f[j].t.position - f[j - 1].t.position;
+                            Vector3 axis = Vector3.Cross(from, palm);
+                            Vector3 run = f[j + 1].t.position - f[j].t.position;
+                            if (axis.sqrMagnitude > 1e-10f && run.sqrMagnitude > 1e-10f)
+                            {
+                                sum += Vector3.SignedAngle(from, Vector3.ProjectOnPlane(run, axis.normalized), axis.normalized);
+                                n++;
+                            }
+                        }
+                    }
+                    if (n > 0 && sum / n < -12f)
+                    {
+                        arm.handPalm = -arm.handPalm;
+                        Plugin.ModLog.LogInfo($"Arms: {arm.who} {(arm.side == 0 ? "left" : "right")} hand: its fingers curl {sum / n:F0} deg on average toward what was taken for the palm: the palm is the other side, swapped.");
+                    }
+                }
+                if (arm.fingers == null)
+                {
+                    var kids = new System.Text.StringBuilder();
+                    for (int c = 0; under != null && c < under.Length && c < 40; c++)
+                    {
+                        if (under[c] != null && under[c] != hand)
+                        {
+                            kids.Append(kids.Length > 0 ? ", " : "").Append(under[c].name).Append(under[c].parent == hand ? "*" : "");
+                        }
+                    }
+                    Plugin.ModLog.LogInfo($"Arms: the bones under {arm.who} hand '{hand.name}' (* right under it): {kids}.");
                 }
                 Plugin.ModLog.LogInfo($"Arms: {arm.who} {(arm.side == 0 ? "left" : "right")} fingers: {(arm.fingers != null ? names.ToString() + "; they are laid flat and close where the hand holds on" : "not found by name (" + chains.Count + " of 4); they are left as the game has them")}.");
             }
@@ -536,6 +619,27 @@ namespace CMAScenes
                 {
                     b.Commit();
                 }
+            }
+            if (Time.unscaledTime >= s_fingerLogAt[arm.side & 1])
+            {
+                // (For the record, every few seconds: how far each joint of each finger is curled toward the palm now.)
+                s_fingerLogAt[arm.side & 1] = Time.unscaledTime + 6f;
+                var sb = new System.Text.StringBuilder();
+                foreach (RotSlot[] f in arm.fingers)
+                {
+                    sb.Append(sb.Length > 0 ? " | " : "");
+                    for (int j = 0; j + 1 < f.Length; j++)
+                    {
+                        Vector3 from = j == 0 ? ahead : f[j].t.position - f[j - 1].t.position;
+                        Vector3 axis = Vector3.Cross(from, palm);
+                        Vector3 run = f[j + 1].t.position - f[j].t.position;
+                        if (axis.sqrMagnitude > 1e-10f && run.sqrMagnitude > 1e-10f)
+                        {
+                            sb.Append(j > 0 ? " " : "").Append(Vector3.SignedAngle(from, Vector3.ProjectOnPlane(run, axis.normalized), axis.normalized).ToString("F0"));
+                        }
+                    }
+                }
+                Plugin.ModLog.LogInfo($"Arms: {arm.who} {(arm.side == 0 ? "left" : "right")} fingers curled toward the palm, deg, by joint (straight {straight:F2}, grip {grip:F2}): {sb}.");
             }
         }
     }

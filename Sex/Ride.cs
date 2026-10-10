@@ -226,7 +226,9 @@ namespace CMAScenes
             // Where her hands are: on her own thighs, under her breasts, or on his chest (then she leans over him as far as
             // it takes to reach it; with her back to him his chest is behind her, and her hands stay on her thighs). Each
             // place has a weight that glides, so changing it moves her arms there.
-            string handsOn = Plugin.RideHandsOn.Value ?? "";
+            // (Her hands are always her own: where they go follows her pleasure and the pace, Scenes.cs AutoHands. The old setting
+            // "Ride/HandsMode" is no longer read, and the poses no longer ask for a place.)
+            string handsOn = "Auto";
             bool herBack = string.Equals(Plugin.RideFacing.Value, "Away", StringComparison.OrdinalIgnoreCase);
             if (string.Equals(handsOn, "Auto", StringComparison.OrdinalIgnoreCase))
             {
@@ -295,16 +297,16 @@ namespace CMAScenes
                 Vector3 torso = shoulders - pelvisBase;
                 Vector3 home = me.m_vulvaHomeValid ? new Vector3(me.m_vulvaHome.x, pelvisThen.y, me.m_vulvaHome.z) : pelvisThen;
                 float far = Mathf.Clamp(Vector3.Dot(me.m_heroChest.position - home, fwd), 0.2f, 0.6f);
-                float bestFar = 0.17f, bestLean = 90f;
+                float bestFar = 0.17f, bestLean = 0f;
                 bool found = false;
                 for (float f = far; f >= 0.17f && !found; f -= 0.03f)
                 {
                     Vector3 mid = home + fwd * f;
                     float top = me.HeroTopAt(mid);
                     mid.y = (float.IsNegativeInfinity(top) ? me.m_penisGoalBase.y + 0.02f : top) + 0.025f;
-                    for (float a = 0f; a <= 90f; a += 4f)
+                    for (float a = 0f; a <= 40f; a += 4f)
                     {
-                        if ((me.SpineAt(w, right, leanSet, a, 0f, me.m_holeTilt, shoulders) - mid).sqrMagnitude <= armLen * armLen * 0.8f)
+                        if ((me.SpineAt(w, right, leanSet, a, 0f, me.m_holeTilt, shoulders) - mid).sqrMagnitude <= armLen * armLen * 0.85f)
                         {
                             bestFar = f;
                             bestLean = a;
@@ -314,15 +316,36 @@ namespace CMAScenes
                     }
                 }
                 // (Quick to draw her hands in when she cannot reach, slow to move them further up him: they rest.)
-                me.m_chestFar = Mathf.Lerp(me.m_chestFar, bestFar, 1f - Mathf.Exp(-dt / (bestFar < me.m_chestFar ? 0.25f : 3f)));
+                me.m_chestFar = Mathf.Lerp(me.m_chestFar, bestFar, 1f - Mathf.Exp(-dt / (bestFar < me.m_chestFar ? 0.25f : 1.2f)));
                 me.m_chestLean = Mathf.Lerp(me.m_chestLean, bestLean, 1f - Mathf.Exp(-dt / 0.6f));
                 for (int i = 0; i < 2; i++)
                 {
-                    Vector3 spot = home + fwd * me.m_chestFar + (i == 0 ? -right : right) * 0.08f;
+                    // (Along his body and across it, not along her hips: her hips turn as she grinds, and her palms went with them, back and
+                    // forth over him as if she stroked him.)
+                    Vector3 hFwd = Vector3.ProjectOnPlane(me.m_heroFwd, Vector3.up);
+                    Vector3 hSide = Vector3.Cross(Vector3.up, hFwd);
+                    Vector3 handSide = right;
+                    if (hFwd.sqrMagnitude > 0.5f && Vector3.Dot(hFwd.normalized, fwd) > 0.7f)
+                    {
+                        hFwd.Normalize();
+                        hSide = Vector3.Cross(Vector3.up, hFwd).normalized;
+                        handSide = Vector3.Dot(hSide, right) >= 0f ? hSide : -hSide;
+                    }
+                    else
+                    {
+                        hFwd = fwd;
+                    }
+                    Vector3 spot = home + hFwd * me.m_chestFar + (i == 0 ? -handSide : handSide) * 0.08f;
                     float top = me.HeroTopAt(spot);
                     spot.y = (float.IsNegativeInfinity(top) ? me.m_penisGoalBase.y + 0.02f : top) + 0.025f;
                     chestSpot[i] = spot;
                 }
+                // (Where she cannot reach him by bending so far (40 deg), her palms stay on her thighs rather than wring her arms
+                // to reach: the weight of his chest goes to her thighs, eased over half a second.)
+                me.m_chestOk = Mathf.MoveTowards(me.m_chestOk, found ? 1f : 0f, dt / 0.5f);
+                float giveUp = onChest * (1f - me.m_chestOk);
+                onChest -= giveUp;
+                onThigh += giveUp;
                 // (Her back is bent by that much more, further down, with what bends her over him.)
                 chestBend = me.m_chestLean * onChest;
                 if (Time.unscaledTime >= me.m_chestLogAt)
