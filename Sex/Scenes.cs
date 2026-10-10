@@ -105,7 +105,7 @@ namespace CMAScenes
             bool mounted = m_ride && m_toggled && m_mount == 3 && m_in && m_heroReady && !m_holdFailed && m_herJointValid;
             bool want = Plugin.RideHeHolds.Value && mounted;
             bool facingAway = string.Equals(Plugin.RideFacing.Value, "Away", StringComparison.OrdinalIgnoreCase);
-            bool wantHands = mounted && (Plugin.RideHeHolds.Value || facingAway);
+            bool wantHands = mounted && Plugin.RideHeHolds.Value && !facingAway;
             m_holdW = Mathf.MoveTowards(m_holdW, want ? 1f : 0f, dt / 1.2f);
             m_holdHandsW = Mathf.MoveTowards(m_holdHandsW, wantHands ? 1f : 0f, dt / 0.45f);
         }

@@ -185,3 +185,6 @@ In `HoldStep`, `m_holdHandsW` is now a separate fade weight. It comes on while m
 
 ## 0.3.12 (2026-10-10) - Reverse Cowgirl: support her bottom on the downstroke
 In Ride.cs, while facing Away and mounted, `m_holdSupport` follows the descending phase (`-cB`); in HoldHands, his glute target rises into her bottom 1.2 cm and the palms rotate upward to cup/support it. Hand IK weight stays continuous to avoid slipping; hip stroke and HeHolds drive remain unchanged. Reset in DriftReset. Built/installed, in-game appearance unverified.
+
+## 0.3.13 (2026-10-10) - Reverse Cowgirl: no automatic hand hold
+Removed facing Away from the hand-only auto hold. In Reverse, his hands stay with the game's animation; they only go to her in other poses when the explicit HeHolds setting is enabled. Built with SkipInstall because the game was open; hidden installer copies the DLL after the game closes.
