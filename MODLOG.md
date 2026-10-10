@@ -175,3 +175,7 @@ Log: `X-ray: through her body: her canal is drawn round him`.
 Log: with the bend to reach him capped at 26 deg (0.3.6) she "does not reach him anywhere" (hands aimed at 17 cm up him) while sitting high: wrists in strain 12-52,
 "80 deg palm up" flips = arms wrung as she moves. Now: bend up to 40 deg; where she still cannot reach him, `m_chestOk` falls to 0 over 0.5 s and the weight of
 "his chest" goes to her thighs (and `chestBend` to 0, the default of `bestLean` is 0) instead of aiming the hands at a point out of reach.
+
+## 0.3.10 (2026-10-10) - user: the plugin's canal hid the game's semen leaving her
+`XRay/OwnCanal` -> new key `OwnCanal2`, default off: the game's own canal is drawn again (it stretches round him by itself); the plugin's canal and the
+womb on his tip (0.3.8) are only with the setting on.
