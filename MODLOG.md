@@ -142,3 +142,10 @@ to reach his chest 37 cm up (`Ride: her hands on him`); the wrist wants that muc
 0.3.3 log: fingers found (`Finger10..40 (3)`), swivel steady and mirrored left/right (strain 1-2 on his chest). Screenshots: her right hand lies
 flat on his belly; her left hand hangs at her crotch as a clenched fist with a bent wrist ("cannot reach: rests on her thigh"). New log line
 every 6 s: `Arms: ... fingers curled toward the palm, deg, by joint` (to see whether the left fingers are straightened at all).
+
+## 0.3.5 (2026-10-10) - found by the finger log of 0.3.4; NOT run in the game
+Her left fingers read as curled -38/-33 deg toward "the palm" (never changed: straightening only acts above 8 deg), the right +35/+37 by the same
+formula: the palm of her LEFT hand was taken for its back (handPalm sign in HandFlat is wrong for that rig), so the whole left hand was laid
+palm up / twisted and its fist never opened. Now `FingersFind` checks the average curl of the resting fingers against the palm and swaps the
+palm if it is below -12 deg (log: "the palm is the other side, swapped"). Holds for his hands too. If the left wrist still looks wrong, the
+cause is elsewhere (neutral of the wrist turn, `ArmSolve`).

@@ -485,6 +485,34 @@ namespace CMAScenes
                 {
                     arm.fingers = chains.ToArray();
                 }
+                if (arm.fingers != null && arm.handOk)
+                {
+                    // Which side of her hand is the palm: fingers at rest curl toward it. Where they curl the other way by some
+                    // degrees on average, the palm was taken for the back of the hand (her left hand was: its fingers read as
+                    // curled -38 deg while they were clenched in a fist), and the two are swapped here.
+                    Vector3 palm = (hand.rotation * arm.handPalm).normalized, ahead = (hand.rotation * arm.handFingers).normalized;
+                    float sum = 0f;
+                    int n = 0;
+                    foreach (RotSlot[] f in arm.fingers)
+                    {
+                        for (int j = 0; j + 1 < f.Length; j++)
+                        {
+                            Vector3 from = j == 0 ? ahead : f[j].t.position - f[j - 1].t.position;
+                            Vector3 axis = Vector3.Cross(from, palm);
+                            Vector3 run = f[j + 1].t.position - f[j].t.position;
+                            if (axis.sqrMagnitude > 1e-10f && run.sqrMagnitude > 1e-10f)
+                            {
+                                sum += Vector3.SignedAngle(from, Vector3.ProjectOnPlane(run, axis.normalized), axis.normalized);
+                                n++;
+                            }
+                        }
+                    }
+                    if (n > 0 && sum / n < -12f)
+                    {
+                        arm.handPalm = -arm.handPalm;
+                        Plugin.ModLog.LogInfo($"Arms: {arm.who} {(arm.side == 0 ? "left" : "right")} hand: its fingers curl {sum / n:F0} deg on average toward what was taken for the palm: the palm is the other side, swapped.");
+                    }
+                }
                 if (arm.fingers == null)
                 {
                     var kids = new System.Text.StringBuilder();
