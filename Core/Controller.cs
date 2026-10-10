@@ -167,6 +167,10 @@ namespace CMAScenes
                 {
                     CyclePreset();
                 }
+                if (Plugin.NextPoseKey.Value != KeyCode.None && Input.GetKeyDown(Plugin.NextPoseKey.Value) && !Menu.IsOpen)
+                {
+                    CyclePose(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) ? -1 : 1);
+                }
                 if (Plugin.CondomKey.Value != KeyCode.None && Input.GetKeyDown(Plugin.CondomKey.Value))
                 {
                     ToggleCondom();
@@ -210,6 +214,21 @@ namespace CMAScenes
         }
 
         private int m_inputWarns;
+
+        private void CyclePose(int direction)
+        {
+            if (!m_toggled || m_switching)
+            {
+                return;
+            }
+            bool ride = m_ride;
+            Poses.Pose[] poses = ride ? Poses.Ride : Poses.Twerk;
+            var selected = ride ? Plugin.RidePoseType : Plugin.TwerkPoseType;
+            int current = Poses.IndexOf(poses, selected.Value);
+            int next = current < 0 ? (direction < 0 ? poses.Length - 1 : 0) : (current + direction + poses.Length) % poses.Length;
+            Poses.Apply(poses[next], selected);
+            Notice(Loc.T("Pose: ", "Поза: ") + Loc.Pose(poses[next].name));
+        }
 
         // The speed keys: a step faster or slower for the mode that is running (the ride when neither is), within the
         // range of its slider in the window. Saved at once, like a slider let go.

@@ -201,18 +201,30 @@ namespace CMAScenes
             return wave * (1f - 0.8f * calm);
         }
 
-        // With the pose flow on: a pose for how aroused she is. Cowgirl to begin with, Astride when she warms up, Over him
-        // when she is nearly there, and back to Cowgirl once a climax is over. Never within half a minute of the last change.
+        // With the pose flow on, move through distinct front-facing stances as she warms up. Reverse
+        // stays manual because turning her all the way around while mounted needs the player's timing.
         private float m_flowAt = -100f;
+        private string m_flowPose;
         private void PoseFlowStep()
         {
             float now = Time.unscaledTime;
+            string pose = Plugin.RidePoseType.Value ?? "";
+            if (!string.Equals(pose, m_flowPose, StringComparison.OrdinalIgnoreCase))
+            {
+                if (m_flowPose != null)
+                {
+                    // The player changed it in the window or with the shortcut: leave her there for a while.
+                    m_flowAt = now;
+                }
+                m_flowPose = pose;
+                return;
+            }
             if (!Plugin.RideFlow.Value || m_mount != 3 || !m_in || m_holeAnal || now - m_flowAt < 30f || now - m_climaxAt < 10f)
             {
                 return;
             }
-            int cur = Poses.IndexOf(Poses.Ride, Plugin.RidePoseType.Value);
-            if (cur < 0 || cur > 2)
+            int cur = Poses.IndexOf(Poses.Ride, pose);
+            if (cur < 0 || cur == 4)
             {
                 return;
             }
@@ -225,15 +237,32 @@ namespace CMAScenes
             {
                 next = 1;
             }
-            else if (cur == 1 && m_herWet > 0.8f)
+            else if (cur == 1 && m_herWet > 0.65f)
             {
                 next = 2;
+            }
+            else if (cur == 2 && m_herWet > 0.8f)
+            {
+                next = 3;
+            }
+            else if (cur == 3 && m_herWet > 0.8f)
+            {
+                next = m_tired > 0.55f ? 6 : 5;
+            }
+            else if (cur == 5 && (m_tired > 0.55f || now - m_flowAt > 45f))
+            {
+                next = 6;
+            }
+            else if (cur == 6 && now - m_flowAt > 45f)
+            {
+                next = 0;
             }
             if (next == cur)
             {
                 return;
             }
             m_flowAt = now;
+            m_flowPose = Poses.Ride[next].name;
             Poses.Set(Poses.Ride[next], Plugin.RidePoseType);
             Plugin.ModLog.LogInfo("Ride: pose flow: " + Poses.Ride[cur].name + " to " + Poses.Ride[next].name + " (aroused " + m_herWet.ToString("F2") + ").");
         }

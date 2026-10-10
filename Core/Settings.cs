@@ -30,6 +30,7 @@ namespace CMAScenes
         internal static ConfigEntry<KeyCode> BikiniKey;
         internal static ConfigEntry<KeyCode> CondomKey;
         internal static ConfigEntry<KeyCode> PresetKey;
+        internal static ConfigEntry<KeyCode> NextPoseKey;
         internal static ConfigEntry<KeyCode> FasterKey;
         internal static ConfigEntry<KeyCode> SlowerKey;
         internal static ConfigEntry<bool> ShowNotice;
@@ -177,6 +178,7 @@ namespace CMAScenes
             BikiniKey = Config.Bind("Bikini", "Key", KeyCode.K, "Key that puts her in the bikini, or back in her clothes.");
             CondomKey = Config.Bind("Condom", "Key", KeyCode.I, "Key that gets a condom out during the ride (it lies on his belly, to be taken with his hand and brought to his tip), or takes off the one he wears.");
             PresetKey = Config.Bind("Input", "PresetKey", KeyCode.P, "Key that switches to the next preset: Slow, Soft, Fast, Mine.");
+            NextPoseKey = Config.Bind("Input", "NextPoseKey", KeyCode.KeypadMultiply, "While twerking or riding, switch to the next pose; hold Shift for the previous pose. None disables the shortcut.");
             FasterKey = Config.Bind("Input", "FasterKey", KeyCode.KeypadPlus, "Key that makes the ride (or the twerk, while she twerks) a little faster. None: no key.");
             SlowerKey = Config.Bind("Input", "SlowerKey", KeyCode.KeypadMinus, "Key that makes the ride (or the twerk, while she twerks) a little slower. None: no key.");
             ShowNotice = Config.Bind("Input", "ShowNotice", true, "Show a line at the top of the screen while she twerks or rides: what is running and which key stops it.");
@@ -244,7 +246,7 @@ namespace CMAScenes
             XRayInsetSide = Config.Bind("XRay", "InsetSide", "Right", "The inset: the side of the screen it is at, Right or Left.");
             RideLead = Config.Bind("Ride", "SheLeads", true, "She finds her own rhythm and her own depth, by what the game itself has of her body: the tempo is turned until the speed of him in her is the one the game's rhythm has her like best (it wanders, and is another one near her climax and after it), and she takes him just short of where the game has it hurt her. Off: the speed and depth that are set, as they are.");
             RideAlive = Config.Bind("Ride", "Alive", true, "Her living body, all of it at once: she warms up before she takes him deep, eases off while it hurts, tires and gets her breath back, breathes, and her tempo comes in waves. Off: none of that (each part has a setting of its own in this file as well).");
-            RideFlow = Config.Bind("Ride", "PoseFlow", false, "She changes pose by herself as she gets aroused: Cowgirl, then Astride, then Over him, and back to Cowgirl after a climax.");
+            RideFlow = Config.Bind("Ride", "PoseFlow", false, "She changes pose by herself as she gets aroused: Cowgirl, Astride, Over him, Leaning back, Squatting or Kneeling. Reverse remains a manual choice. She returns to Cowgirl after a climax and waits after a manual pose change.");
             RideHeMeets = Config.Bind("Ride", "ThrustHeight", 0.045f, "He meets her strokes: his hips come up by this much, in metres, as she comes down on him, in time with her (0: he lies still), and she is lifted by them. The mouse wheel still lifts his hips by hand, on top of it.");
             RideWomb = Config.Bind("Ride", "WombReach", 0.035f, "Her womb goes on from her vagina: when he comes in her, his head goes in through its neck by this much, in metres (her womb draws back round it in the X-ray). 0: his head stays in her canal.");
             RideFeetAuto = Config.Bind("Ride", "FeetFindGround", true, "Her feet find the ground under them (a ray down at each): the floor, a rug, the top of a bench, a step; her ankles stand as high above it as the game's pose has them (with heels, higher), and the soles lie along a slope. Off: her feet go by the height of the floor under her hips alone.");

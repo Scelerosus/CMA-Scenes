@@ -82,6 +82,7 @@ namespace CMAScenes
             KeyRow(st, T("Condom", "Презерватив"), Plugin.CondomKey, T("Gets a condom out, or takes off the one he wears.", "Достаёт презерватив или снимает надетый."));
             KeyRow(st, "X-ray", Plugin.XRayKey, T("Switches the X-ray on and off: her insides and his penis in them, during the sex.", "Включает и выключает X-ray: её внутренние органы и член в них во время секса."));
             KeyRow(st, T("Next mood", "Следующий настрой"), Plugin.PresetKey, T("Switches to the next mood: Sensual, Gentle, Wild, As set.", "Переключает настрой по кругу: Чувственно, Нежно, Страстно, Как настроено."));
+            KeyRow(st, T("Next pose", "Следующая поза"), Plugin.NextPoseKey, T("In sex or twerk: next pose; hold Shift for the previous one.", "Во время секса или тверка: следующая поза; с Shift — предыдущая."));
             KeyRow(st, T("Faster", "Быстрее"), Plugin.FasterKey, T("A step faster: the sex (or the twerk, while she twerks). The tempo is saved, as with the slider.", "На шаг быстрее: секс (или тверк, пока она тверкает). Темп сохраняется, как ползунком."));
             KeyRow(st, T("Slower", "Медленнее"), Plugin.SlowerKey, T("A step slower: the sex (or the twerk, while she twerks). The tempo is saved, as with the slider.", "На шаг медленнее: секс (или тверк, пока она тверкает). Темп сохраняется, как ползунком."));
             if (Plugin.MenuKey.Value == KeyCode.None)
@@ -104,7 +105,7 @@ namespace CMAScenes
             ResetButton(st, T("Reset the keys and these settings", "Сбросить клавиши и эти настройки"), () =>
             {
                 s_capture = null;
-                ResetAll(Plugin.MenuKey, Plugin.ToggleKey, Plugin.RideKey, Plugin.BikiniKey, Plugin.CondomKey, Plugin.XRayKey, Plugin.PresetKey, Plugin.FasterKey, Plugin.SlowerKey, Plugin.ShowNotice, Plugin.ShowStatus, Plugin.Language,
+                ResetAll(Plugin.MenuKey, Plugin.ToggleKey, Plugin.RideKey, Plugin.BikiniKey, Plugin.CondomKey, Plugin.XRayKey, Plugin.PresetKey, Plugin.NextPoseKey, Plugin.FasterKey, Plugin.SlowerKey, Plugin.ShowNotice, Plugin.ShowStatus, Plugin.Language,
                     Plugin.Rhythm, Plugin.MoveSeconds, Plugin.Smoothness, Plugin.PoseRamp);
             });
         }

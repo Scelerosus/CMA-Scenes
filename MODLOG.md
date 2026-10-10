@@ -8,6 +8,12 @@ the two must not run together. The old plugin is disabled in the game folder as 
 
 Build: `dotnet build CMAScenes.csproj -c Release -p:SkipInstall=true`, copy `bin\Release\CMAScenes.dll` when the game is closed.
 
+## 0.3.27 (2026-10-11) - live pose control and fuller pose flow
+
+- `KeypadMultiply` cycles poses during riding or twerking; Shift reverses direction. The shortcut is configurable in the settings window.
+- Optional automatic pose flow now uses six front-facing ride poses, adapting the squat/kneel choice to fatigue. Reverse remains manual so the player controls the 180-degree turn.
+- A manual pose choice pauses automatic changes for at least 30 seconds. Starting a new ride also starts with a 30-second settling period.
+
 ## 0.3.26 (2026-10-11) - smoother hand contact
 
 - The reachable point on each thigh is now solved continuously, so the palm does not move in 2 cm steps as the leg bends.

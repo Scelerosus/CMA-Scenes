@@ -62,6 +62,8 @@ namespace CMAScenes
             PoseFixReset();
             m_ridePoseName = "";
             m_ridePoseChangedAt = -10f;
+            m_flowAt = Time.unscaledTime;
+            m_flowPose = Plugin.RidePoseType.Value;
             m_chestFar[0] = m_chestFar[1] = 0.3f;
             m_chestOk[0] = m_chestOk[1] = 0f;
             m_chestLean = 0f;
