@@ -163,3 +163,10 @@ Menu: the "Her hands" row and the "Lean toward him" slider are gone (the fold is
 are always `AutoHands` (Scenes.cs): thighs while she sits quietly (her pleasure < 0.35, not wet), his chest from a pleasure of 0.35 or when the pose leans
 her over him, behind her when the pose leans back, his chest in both orgasms (was: floor by his shoulders in hers: it folded her over him).
 `Ride/Lean` stays as the pose presets' own value (Cowgirl 18, Astride 30, ...), unchanged, no longer in the menu.
+
+## 0.3.8 (2026-10-10) - user: half of his penis in her canal froze against the womb; NOT run in the game
+New `XRay/XRayCanal.cs`: while he is in her vagina the X-ray draws a canal of the plugin's own round him (tube from her entrance along his axis to his tip,
+radius = his thickness x1.1 + 4.5 mm, narrower at the entrance, closed in a dome past his tip), and `WombStep` puts the womb on his tip
+(`neck = tip + axis * 8 mm`) instead of at the end of the game's short canal bones (6.5 cm). The game's own drawing of her canal (renderer of `VagInternal`)
+is switched off while it is on (restored in `GhostOff`). Out of her, or in her rectum, nothing changes. `XRay/OwnCanal` (default on) turns it off.
+Log: `X-ray: through her body: her canal is drawn round him`.

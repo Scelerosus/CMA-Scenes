@@ -162,6 +162,13 @@ namespace CMAScenes
                     neck += canalUp * Mathf.Min(past, 0.07f);
                 }
             }
+            // (With his tip drawn in a canal of its own round him: the womb rests on his tip.)
+            if (m_xCanalOn)
+            {
+                neck = m_xCanalTip + m_xCanalAxis * 0.008f;
+                canalUp = m_xCanalAxis;
+                up = m_xCanalAxis;
+            }
             // (Her front: the way from her anus to her vagina.)
             float tipped = 0f;
             try
