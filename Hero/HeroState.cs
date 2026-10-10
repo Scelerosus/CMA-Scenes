@@ -488,6 +488,7 @@ namespace CMAScenes
             m_holdArm[0] = m_holdArm[1] = null;
             m_holdW = 0f;
             m_holdHandsW = 0f;
+            m_holdSupport = 0f;
             m_holdFailed = false;
             m_holdTold = false;
             m_herJointValid = false;

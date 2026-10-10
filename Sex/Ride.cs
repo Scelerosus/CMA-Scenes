@@ -200,6 +200,12 @@ namespace CMAScenes
                 // (The glide only ever comes close to its goal: close enough is there.)
                 onW = 1f;
             }
+            bool reverse = string.Equals(Plugin.RideFacing.Value, "Away", StringComparison.OrdinalIgnoreCase);
+            // (On the downstroke in Reverse Cowgirl his palms cup under her bottom and rise into it a little, as if supporting her.
+            // The hip stroke itself is unchanged.)
+            me.m_holdSupport = reverse && me.m_mount == 3 && me.m_in && me.m_toggled
+                ? Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(-cB))
+                : 0f;
 
             // The stroke: her hips rise from where she sits and come back down, one whole smooth wave. On him it is no
             // longer than there is room for on his penis (she does not come off his tip), it is there only once he is in

@@ -182,3 +182,6 @@ womb on his tip (0.3.8) are only with the setting on.
 
 ## 0.3.11 (2026-10-10) - Reverse Cowgirl: his hands on her buttocks
 In `HoldStep`, `m_holdHandsW` is now a separate fade weight. It comes on while mounted/in the ride when facing Away, or when the existing `Ride/HeHolds` mode is enabled. `HoldHands` uses that hand-only weight; `m_holdW` remains exclusive to the existing HeHolds movement and her-hand behavior, so Reverse Cowgirl gets his hands on her buttocks without changing who drives the stroke. Reset with `DriftReset`. Strata reviewed this split and agreed it avoids the movement side effects; in-game reach and contact are unverified.
+
+## 0.3.12 (2026-10-10) - Reverse Cowgirl: support her bottom on the downstroke
+In Ride.cs, while facing Away and mounted, `m_holdSupport` follows the descending phase (`-cB`); in HoldHands, his glute target rises into her bottom 1.2 cm and the palms rotate upward to cup/support it. Hand IK weight stays continuous to avoid slipping; hip stroke and HeHolds drive remain unchanged. Reset in DriftReset. Built/installed, in-game appearance unverified.

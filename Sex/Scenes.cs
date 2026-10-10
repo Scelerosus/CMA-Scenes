@@ -89,7 +89,7 @@ namespace CMAScenes
         // the way his forearm runs, turned toward her cleft and under her as far as a wrist bends, held together; out of
         // the reach of his arm (it is some 55 cm, his shoulders lie 50 to 60 cm from her bottom, and she rises with every
         // stroke) it goes along her flank to the side of her hip, so that his arm stays a little bent.
-        private float m_holdW, m_holdHandsW;
+        private float m_holdW, m_holdHandsW, m_holdSupport;
         private readonly Limb[] m_holdArm = new Limb[2];
         // (Which of her hips each of his hands has: 0 her left, 1 her right; and how far each has gone from her buttock
         // toward the side of her hip for want of reach.)
@@ -176,9 +176,16 @@ namespace CMAScenes
                     // from her cleft, a little below her hip joints, behind them by the flesh of her bottom; her skin there
                     // faces back, out and a little down. His fingers would rather point across it toward her cleft and under
                     // her. Or on the side of her hip: skin facing out, fingers back round her hip toward her bottom.
-                    Vector3 glute = mid + outward * 0.085f - Vector3.up * 0.045f - fwd * 0.105f;
-                    Vector3 gluteN = (-fwd + outward * 0.5f - Vector3.up * 0.2f).normalized;
-                    Vector3 gluteWish = (-outward * 0.55f - Vector3.up * 0.6f - fwd * 0.1f).normalized;
+                    float support = m_holdSupport;
+                    Vector3 glute = mid + outward * 0.085f - Vector3.up * 0.045f - fwd * 0.105f + Vector3.up * (0.012f * support);
+                    Vector3 gluteN = Vector3.Slerp(
+                        (-fwd + outward * 0.5f - Vector3.up * 0.2f).normalized,
+                        (Vector3.up * 0.72f - fwd * 0.42f + outward * 0.18f).normalized,
+                        support).normalized;
+                    Vector3 gluteWish = Vector3.Slerp(
+                        (-outward * 0.55f - Vector3.up * 0.6f - fwd * 0.1f).normalized,
+                        (-outward * 0.42f + Vector3.up * 0.65f - fwd * 0.12f).normalized,
+                        support).normalized;
                     Vector3 hipSide = m_herJoint[j] + outward * 0.095f + Vector3.up * 0.01f - fwd * 0.02f;
                     Vector3 hipN = (outward - fwd * 0.35f).normalized;
                     Vector3 hipWish = (-fwd * 0.8f - Vector3.up * 0.3f).normalized;
