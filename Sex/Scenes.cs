@@ -89,7 +89,7 @@ namespace CMAScenes
         // the way his forearm runs, turned toward her cleft and under her as far as a wrist bends, held together; out of
         // the reach of his arm (it is some 55 cm, his shoulders lie 50 to 60 cm from her bottom, and she rises with every
         // stroke) it goes along her flank to the side of her hip, so that his arm stays a little bent.
-        private float m_holdW;
+        private float m_holdW, m_holdHandsW;
         private readonly Limb[] m_holdArm = new Limb[2];
         // (Which of her hips each of his hands has: 0 her left, 1 her right; and how far each has gone from her buttock
         // toward the side of her hip for want of reach.)
@@ -102,16 +102,20 @@ namespace CMAScenes
 
         private void HoldStep(float dt)
         {
-            bool want = Plugin.RideHeHolds.Value && m_ride && m_toggled && m_mount == 3 && m_in && m_heroReady && !m_holdFailed && m_herJointValid;
+            bool mounted = m_ride && m_toggled && m_mount == 3 && m_in && m_heroReady && !m_holdFailed && m_herJointValid;
+            bool want = Plugin.RideHeHolds.Value && mounted;
+            bool facingAway = string.Equals(Plugin.RideFacing.Value, "Away", StringComparison.OrdinalIgnoreCase);
+            bool wantHands = mounted && (Plugin.RideHeHolds.Value || facingAway);
             m_holdW = Mathf.MoveTowards(m_holdW, want ? 1f : 0f, dt / 1.2f);
+            m_holdHandsW = Mathf.MoveTowards(m_holdHandsW, wantHands ? 1f : 0f, dt / 0.45f);
         }
 
         private void HoldHands(float weight)
         {
-            if (m_holdW < 0.01f || m_rideWoman == null || !m_herJointValid || m_holdFailed || m_hero == null)
+            if (m_holdHandsW < 0.01f || m_rideWoman == null || !m_herJointValid || m_holdFailed || m_hero == null)
             {
                 m_holdHip[0] = m_holdHip[1] = -1;
-                if (m_holdW < 0.01f)
+                if (m_holdHandsW < 0.01f)
                 {
                     m_holdReachTold = false;
                 }
@@ -195,13 +199,13 @@ namespace CMAScenes
                     Vector3 target = HoldWrist(shoulder, Vector3.Lerp(glute, hipSide, k), skin);
                     // (His elbow out to the side and down toward what he lies on.)
                     Vector3 pole = outward * 0.6f - Vector3.up * 0.8f;
-                    float w = weight * m_holdW;
+                    float w = weight * m_holdHandsW;
                     Quaternion foreRot0 = arm.fore.t.rotation, handRot0 = arm.end.t.rotation;
                     Ik(arm, target, pole, w, true);
                     // His palm on her skin, within what his wrist does; his fingers together, a little curled to her.
                     HandLay(arm, side, skin, wish, w, foreRot0, handRot0);
                     FingersPose(arm, 0.4f * w, 0.1f * w, 0.65f * w);
-                    if (!m_holdReachTold && m_holdW > 0.9f)
+                    if (!m_holdReachTold && m_holdHandsW > 0.9f)
                     {
                         m_holdReachTold = true;
                         float dGlute = (HoldWrist(shoulder, glute, gluteN) - shoulder).magnitude;

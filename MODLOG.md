@@ -179,3 +179,6 @@ Log: with the bend to reach him capped at 26 deg (0.3.6) she "does not reach him
 ## 0.3.10 (2026-10-10) - user: the plugin's canal hid the game's semen leaving her
 `XRay/OwnCanal` -> new key `OwnCanal2`, default off: the game's own canal is drawn again (it stretches round him by itself); the plugin's canal and the
 womb on his tip (0.3.8) are only with the setting on.
+
+## 0.3.11 (2026-10-10) - Reverse Cowgirl: his hands on her buttocks
+In `HoldStep`, `m_holdHandsW` is now a separate fade weight. It comes on while mounted/in the ride when facing Away, or when the existing `Ride/HeHolds` mode is enabled. `HoldHands` uses that hand-only weight; `m_holdW` remains exclusive to the existing HeHolds movement and her-hand behavior, so Reverse Cowgirl gets his hands on her buttocks without changing who drives the stroke. Reset with `DriftReset`. Strata reviewed this split and agreed it avoids the movement side effects; in-game reach and contact are unverified.
