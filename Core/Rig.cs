@@ -147,7 +147,7 @@ namespace CMAScenes
             v = Vector3.zero;
         }
 
-        public void Step(Vector3 shake, float gain, float dt)
+        public void Step(Vector3 shake, float gain, float dt, float maxOffset = 0.06f)
         {
             float k = (2f * Mathf.PI * freq) * (2f * Mathf.PI * freq);
             float c = 2f * damping * Mathf.Sqrt(k);
@@ -158,9 +158,10 @@ namespace CMAScenes
                 v += (-k * x - c * v - shake * gain) * h;
                 x += v * h;
             }
-            if (x.sqrMagnitude > 0.0036f)
+            float limit = Mathf.Max(0f, maxOffset);
+            if (x.sqrMagnitude > limit * limit)
             {
-                x = x.normalized * 0.06f;
+                x = x.normalized * limit;
             }
         }
     }
@@ -361,6 +362,7 @@ namespace CMAScenes
         public const int Squat = 0, HipBack = 1, Lean = 2, Arch = 3, Stance = 4, Toes = 5, HandsKnees = 6, HandsHips = 7, HandsAny = 8;
         public const int RideSquat = 9, RideLean = 10, RideStance = 11, RideHandsUnder = 12, RideKneel = 13, RideHandsChest = 14;
         public const int RideOnHim = 15, RideHandsFloor = 16, RideHandsSide = 17, RideHandsBack = 18, RideHandsArms = 19;
-        public const int Count = 20;
+        public const int RideHandsHips = 20;
+        public const int Count = 21;
     }
 }

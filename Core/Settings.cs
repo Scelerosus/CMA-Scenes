@@ -222,7 +222,7 @@ namespace CMAScenes
 
             // ---- The sex: what the window shows ----
             RideHole = Config.Bind("Ride", "Hole", "Vagina", "Which of her holes she takes him in during the ride: Vagina or Anus.");
-            RidePoseType = Config.Bind("Ride", "PoseType", "", "The ride pose chosen last in the window: Cowgirl, Astride, Over him, Leaning back or Reverse (empty until one is chosen). Choosing one sets the hands, the legs, the facing and the lean.");
+            RidePoseType = Config.Bind("Ride", "PoseType", "", "The ride pose chosen last in the window: Cowgirl, Astride, Over him, Leaning back, Reverse, Squatting or Kneeling (empty until one is chosen). Choosing one sets the pose's hands, legs, facing and lean.");
             RideFrequency = Config.Bind("Ride", "Frequency", 1.1f, "Strokes per second (the tempo drifts around this). A woman riding keeps up about one stroke a second, and a quick spell is some one and a half.");
             RideDepth = Config.Bind("Ride", "Depth", 1f, "How much of his penis she takes when she sits down: 1 is all of it (down to his skin), 0.5 half of it.");
             RideBounce = Config.Bind("Ride", "Bounce", 0.09f, "The length of the stroke, in metres: how far her hips rise from where she sits on him before they come down again.");
@@ -255,8 +255,8 @@ namespace CMAScenes
             RideHeHolds = Config.Bind("Ride", "HeHolds", false, "He holds her: his hands take her by the hips and her bottom and he moves her on himself with his own hips, stroke by stroke; she lets him, her hands on his arms and chest.");
             RideFinish = Config.Bind("Ride", "Finish", "Free", "What she does as he nears coming (by the game's own pleasure of him): Free (nothing: she rides on), Edge (she all but stops, sitting on him, until he has cooled a little, again and again) or Together (she holds him back like that only until she is nearly there herself, then goes all out).");
             RideEndAfter = Config.Bind("Ride", "GetOffAfterHeComes", false, "After he has come in her she stays on him for a while, then gets off him by herself: the ride ends.");
-            RideHandsOn = Config.Bind("Ride", "HandsMode", "Auto", "Where her hands are during the ride: Auto (she finds where to hold on to him herself: his chest, his belly, his shoulders; in her orgasm she takes hold of him and pulls), Behind (leaning back, on his thighs behind her), Thighs (on her own thighs), UnderBreasts (under her breasts) HisChest (on him, as far up toward his chest as she reaches) or Shoulders (on the floor just past his shoulders: she bends over him). With her back to him the last two stay on her thighs. Anything else is taken as Thighs.");
-            RideLegs =Config.Bind("Ride", "Legs", "Feet", "How she is on him: Feet (squatting over him, her feet on the floor either side of him) or Knees (astride him, kneeling, her shins on the floor either side of him).");
+            RideHandsOn = Config.Bind("Ride", "HandsMode", "Auto", "Legacy setting retained for old configuration files; ride hand placement is now chosen by pose, balance and the HeHolds option.");
+            RideLegs = Config.Bind("Ride", "Legs", "Feet", "Set by the chosen ride pose: Feet for Squatting, Cowgirl, Leaning back and Reverse; Knees for Kneeling, Astride and Over him.");
             RideLean = Config.Bind("Ride", "Lean", 40f, "How far she leans forward over you, in degrees.");
             // (His penis gets wet from her, always: the switch "Ride/Wet" is gone from the window and is not read any more.)
             CondomAuto = Config.Bind("Condom", "PutOnByItself", false, "On: the condom goes onto him by itself as soon as she has come up off him, without his hand.");

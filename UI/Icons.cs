@@ -38,6 +38,8 @@ namespace CMAScenes
             { "pose.over-him", "m c 86 83 6.5; m l 78 86 50 86 9 87 4.5; h l 40 89 60 85 44 74 67 58 5; h c 77 50 8; h l 72 43 66 41 3; f l 67 59 81 71 93 88 4.5" },
             { "pose.leaning-back", "m c 87 83 6.5; m l 79 86 50 86 9 87 4.5; h l 69 90 63 89 68 62 52 72 43 45 5; h c 39 33 8; h l 33 30 28 38 3; f l 43 47 36 63 31 81 4.5" },
             { "pose.reverse", "m c 87 83 6.5; m l 79 86 50 86 9 87 4.5; h l 32 90 39 89 34 63 52 72 39 46 5; h c 34 35 8; h l 41 31 46 39 3; f l 39 48 36 58 40 66 4.5" },
+            { "pose.squatting", "m c 87 83 6.5; m l 79 86 50 86 9 87 4.5; h l 67 90 60 89 65 63 47 72 56 45 5; h c 60 33 8; h l 53 29 47 37 3; f l 56 47 60 57 60 66 4.5" },
+            { "pose.kneeling", "m c 87 83 6.5; m l 79 86 50 86 9 87 4.5; h l 43 89 64 84 46 73 60 48 5; h c 66 37 8; h l 59 33 54 41 3; f l 60 50 68 63 74 79 4.5" },
             // Hands under her breasts (the cowgirl, sitting up, her forearms across).
             { "hands.under-breasts", "m c 87 83 6.5; m l 79 86 50 86 9 87 4.5; h l 67 90 60 89 65 63 47 72 52 44 5; h c 54 32 8; h l 47 29 42 37 3; f l 52 47 49 58 62 55 4.5" },
             // On her knees with her hands on her thighs: what "on her knees" means, beside the cowgirl's squat.

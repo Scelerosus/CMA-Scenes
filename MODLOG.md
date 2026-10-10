@@ -188,3 +188,23 @@ In Ride.cs, while facing Away and mounted, `m_holdSupport` follows the descendin
 
 ## 0.3.13 (2026-10-10) - Reverse Cowgirl: no automatic hand hold
 Removed facing Away from the hand-only auto hold. In Reverse, his hands stay with the game's animation; they only go to her in other poses when the explicit HeHolds setting is enabled. Built with SkipInstall because the game was open; hidden installer copies the DLL after the game closes.
+
+## 0.3.17 (2026-10-10) - limit chest reach bend in kneeling ride poses
+The live Kneeling scene showed her adding 32–40 degrees of forward bend to reach his chest, while her left hand still missed by 8–18 cm. Astride, Kneeling and Over him now search for a chest contact point within 22 degrees of added bend, so the target moves closer when necessary and her torso does not fold forward to chase an unreachable point.
+
+## 0.3.16 (2026-10-10) - reduce forward bend in Over him
+The live Over him scene repeatedly put her head and chest into his body; the collision correction had to remove as much as 24 degrees of added bend. The preset lean is now 22 instead of 40 degrees, her hands target his chest rather than the unreachable shoulder-side floor, and the extra chest bend is capped at 22 degrees for this pose.
+
+## 0.3.15 (2026-10-10) - keep buttock shape steady as ride speed rises
+Reduced ride-only glute-bone wobble to 30% of its former response and limited its offset to 2 cm. The spring was driven by hip acceleration, which grows quickly with stroke tempo and could pull the glute bones far enough to distort the silhouette. The twerk wobble is unchanged. Built/installed; live shape comparison still needed.
+
+## 0.3.14 (2026-10-10) - ride hand placement and standalone leg poses
+- Her chest contact points are spread farther apart to prevent her palms converging at the middle of his torso. Hand placement is pose-aware: Kneeling/Astride reach to his chest, Over him braces by his shoulders, Leaning back rests on her own thighs, and Reverse keeps her hands on her thighs.
+- With `HeHolds` on, his hands now follow through in every facing direction; in Reverse they cup the lower outer sides of her bottom. With it off his automatic hold stays disabled.
+- Squatting and Kneeling are separate choices in the ride position cards instead of one `Her legs` sub-option. Squatting gets its own deeper preset; both presets select their own leg style and stay out of the existing Cowgirl→Astride→Over him pose flow.
+- Built with `SkipInstall` while the game was running; in-game hand contact and pose transitions still need a live check.
+
+## 0.3.18 (2026-10-10) - distinct hand rests for the ride poses
+
+- Auto hand placement now chooses different resting places by pose: Kneeling uses thighs or her ribs, Astride her ribs or his chest, Over him his chest, Leaning back his thighs, and Reverse her hips or thighs. Cowgirl keeps the pleasure driven chest reach, while Squatting uses her thighs or ribs and can brace at the sides at speed.
+- Her own hips are a new hand target that follows her pelvis. Pose changes and orgasms can select a new target immediately; other changes keep the existing ten second dwell and the per arm reach fallback.

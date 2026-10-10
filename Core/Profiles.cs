@@ -25,14 +25,16 @@ namespace CMAScenes
             new Pose { name = "Low arch", values = new[] { "Pose|LeanDegrees=76", "Pose|Arch=24", "Pose|SquatDepth=0.08", "Pose|HipBack=0.16", "Pose|Stance=0.2", "Pose|ToesOut=12", "Pose|HandsOn=Knees" } }
         };
 
-        // The ride: which way she faces, where her hands are, and how she leans.
+        // The ride: each named position also fixes whether she kneels or squats. Her hands follow the position and her balance.
         internal static readonly Pose[] Ride =
         {
-            new Pose { name = "Cowgirl", values = new[] { "Ride|Facing=Face", "Ride|Lean=18", "Ride|Legs=Feet", "Ride|HandsMode=Auto" } },
-            new Pose { name = "Astride", values = new[] { "Ride|Facing=Face", "Ride|Lean=30", "Ride|Legs=Knees", "Ride|HandsMode=HisChest" } },
-            new Pose { name = "Over him", values = new[] { "Ride|Facing=Face", "Ride|Lean=40", "Ride|Legs=Knees", "Ride|HandsMode=Shoulders" } },
-            new Pose { name = "Leaning back", values = new[] { "Ride|Facing=Face", "Ride|Lean=-18", "Ride|Legs=Feet", "Ride|HandsMode=Behind" } },
-            new Pose { name = "Reverse", values = new[] { "Ride|Facing=Away", "Ride|Lean=26", "Ride|Legs=Feet", "Ride|HandsMode=Thighs" } }
+            new Pose { name = "Cowgirl", values = new[] { "Ride|Facing=Face", "Ride|Lean=18", "Ride|Legs=Feet" } },
+            new Pose { name = "Astride", values = new[] { "Ride|Facing=Face", "Ride|Lean=30", "Ride|Legs=Knees" } },
+            new Pose { name = "Over him", values = new[] { "Ride|Facing=Face", "Ride|Lean=22", "Ride|Legs=Knees" } },
+            new Pose { name = "Leaning back", values = new[] { "Ride|Facing=Face", "Ride|Lean=-18", "Ride|Legs=Feet" } },
+            new Pose { name = "Reverse", values = new[] { "Ride|Facing=Away", "Ride|Lean=26", "Ride|Legs=Feet" } },
+            new Pose { name = "Squatting", values = new[] { "Ride|Facing=Face", "Ride|Lean=26", "Ride|Legs=Feet", "Ride|Squat=0.54" } },
+            new Pose { name = "Kneeling", values = new[] { "Ride|Facing=Face", "Ride|Lean=22", "Ride|Legs=Knees" } }
         };
 
         internal static int IndexOf(Pose[] set, string name)

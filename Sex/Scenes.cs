@@ -25,42 +25,55 @@ namespace CMAScenes
 
         // ---- her hands on him, found by her ----
         //
-        // "Auto": where her hands are is chosen from what she is doing. Sitting up they rest on her thighs; as she warms up
-        // and leans over him they go to his chest; leaning back, to his thighs behind her; in her orgasm, and in his, she
-        // takes hold of him (his shoulders when it is hers, his chest when it is his). A choice stands for a while, so that
-        // her hands do not wander about, and is made at once for an orgasm.
+        // "Auto": each pose has its own resting place and an optional more active place. A choice stands for a while so
+        // that her hands do not wander with every change of pace; an orgasm can change it at once.
         private string m_autoHands = "Thighs";
+        private string m_autoHandsPose = "";
         private float m_autoHandsAt = -100f;
 
         private string AutoHands(bool herBack)
         {
-            if (herBack)
-            {
-                return "Thighs";
-            }
+            string pose = Plugin.RidePoseType.Value;
             float now = Time.unscaledTime;
+            if (!string.Equals(pose, m_autoHandsPose, StringComparison.OrdinalIgnoreCase))
+            {
+                m_autoHandsPose = pose;
+                m_autoHandsAt = -100f;
+            }
             float lean = Plugin.RideLean.Value;
             bool hers = m_climaxHers && ClimaxNow() > 0.15f;
             bool his = !m_climaxHers && ClimaxNow() > 0.15f;
+            bool lively = hers || his || m_herPleasure > 0.6f || m_herWet > 0.75f;
             string want;
             if (m_mount < 3)
             {
                 want = "Thighs";
             }
-            else if (hers)
+            else if (herBack)
             {
-                // (In her orgasm she holds on to his chest: no longer folded over him to the floor by his shoulders.)
+                want = lively ? "Thighs" : "OwnHips";
+            }
+            else if (string.Equals(pose, "Kneeling", StringComparison.OrdinalIgnoreCase))
+            {
+                want = lively ? "UnderBreasts" : "Thighs";
+            }
+            else if (string.Equals(pose, "Astride", StringComparison.OrdinalIgnoreCase))
+            {
+                want = lively ? "HisChest" : "UnderBreasts";
+            }
+            else if (string.Equals(pose, "Over him", StringComparison.OrdinalIgnoreCase))
+            {
                 want = "HisChest";
             }
-            else if (his)
-            {
-                want = "HisChest";
-            }
-            else if (lean < -8f)
+            else if (string.Equals(pose, "Leaning back", StringComparison.OrdinalIgnoreCase) || lean < -8f)
             {
                 want = "Behind";
             }
-            else if (m_herPleasure > 0.35f || m_herWet > 0.6f || lean > 26f)
+            else if (string.Equals(pose, "Squatting", StringComparison.OrdinalIgnoreCase))
+            {
+                want = lively ? "UnderBreasts" : "Thighs";
+            }
+            else if (lively)
             {
                 want = "HisChest";
             }
@@ -104,8 +117,7 @@ namespace CMAScenes
         {
             bool mounted = m_ride && m_toggled && m_mount == 3 && m_in && m_heroReady && !m_holdFailed && m_herJointValid;
             bool want = Plugin.RideHeHolds.Value && mounted;
-            bool facingAway = string.Equals(Plugin.RideFacing.Value, "Away", StringComparison.OrdinalIgnoreCase);
-            bool wantHands = mounted && Plugin.RideHeHolds.Value && !facingAway;
+            bool wantHands = mounted && Plugin.RideHeHolds.Value;
             m_holdW = Mathf.MoveTowards(m_holdW, want ? 1f : 0f, dt / 1.2f);
             m_holdHandsW = Mathf.MoveTowards(m_holdHandsW, wantHands ? 1f : 0f, dt / 0.45f);
         }
@@ -177,7 +189,7 @@ namespace CMAScenes
                     // faces back, out and a little down. His fingers would rather point across it toward her cleft and under
                     // her. Or on the side of her hip: skin facing out, fingers back round her hip toward her bottom.
                     float support = m_holdSupport;
-                    Vector3 glute = mid + outward * 0.085f - Vector3.up * 0.045f - fwd * 0.105f + Vector3.up * (0.012f * support);
+                    Vector3 glute = mid + outward * 0.14f - Vector3.up * 0.045f - fwd * 0.105f + Vector3.up * (0.012f * support);
                     Vector3 gluteN = Vector3.Slerp(
                         (-fwd + outward * 0.5f - Vector3.up * 0.2f).normalized,
                         (Vector3.up * 0.72f - fwd * 0.42f + outward * 0.18f).normalized,

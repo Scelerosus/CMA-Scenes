@@ -132,14 +132,6 @@ namespace CMAScenes
                 T("On: no hand is needed. She comes up off him and it rolls onto him by itself.", "Включено: рука не нужна — она приподнимается, и презерватив раскатывается сам."));
             CardEnd();
 
-            if (FoldBegin(st, "ride.body", T("Her legs", "Её ноги"), T("legs", "ноги"), false))
-            {
-                ChoiceRow(st, T("Her legs", "Её ноги"), new[] { T("Squatting", "На корточках"), T("Kneeling", "На коленях") }, new[] { "Feet", "Knees" }, Plugin.RideLegs, 130f,
-                    T("Squatting: she is on her feet over him. Kneeling: she is astride him, her shins on the floor either side of him (it tires her less).", "На корточках: стоит на ступнях над ним. На коленях: сидит верхом, голени на полу по бокам от него (так она меньше устаёт)."),
-                    new[] { "pose.cowgirl", "legs.knees" });
-            }
-            CardEnd();
-
             ResetButton(st, T("Reset everything about the sex", "Сбросить всё про секс"), () =>
                 ResetAll(Plugin.RideFrequency, Plugin.RideBounce, Plugin.RideGrind, Plugin.RideTilt, Plugin.RideSpring, Plugin.RideDepth, Plugin.RideHipsWork, Plugin.RideKeepHard, Plugin.RideEnterSpeed, Plugin.RideAimForward, Plugin.RideAimUp, Plugin.RideCamSteady, Plugin.RideFov,
                     Plugin.RideFeet, Plugin.RideLean, Plugin.RideFacing, Plugin.RideHeroShift, Plugin.RideHeroClearance,

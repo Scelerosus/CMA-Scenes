@@ -617,8 +617,8 @@ namespace CMAScenes
                 Poses.Apply(set[next], current);
             }
             Tip(set == Poses.Ride
-                ? T("A ready-made position; each of its settings can still be changed after. Cowgirl: she squats over him, feet on the floor, hands on her thighs. Astride: she kneels over him and leans on his chest. Over him: on her knees she bends forward over him, her hands on the floor by his shoulders. Leaning back: she leans back, her hands behind her on his thighs. Reverse: squatting with her back to him.",
-                    "Готовая поза; её настройки потом можно менять по отдельности. Наездница: на корточках над ним, ступни на полу, руки на своих бёдрах. Верхом: на коленях, руками опирается на его грудь. Над ним: на коленях наклоняется над ним, руки на полу у его плеч. Откинувшись: отклоняется назад, руки сзади на его бёдрах. Спиной: на корточках спиной к нему.")
+                ? T("Each position sets her legs, facing and lean; her hands then change with her pleasure. Cowgirl uses her thighs or his chest; Astride her ribs or his chest; Over him his chest; Leaning back his thighs; Reverse her own hips or thighs; Squatting her thighs or ribs; Kneeling her thighs or ribs. She rests on his forearms when he holds her.",
+                    "Каждая поза задаёт ноги, разворот и наклон; руки затем меняются с её удовольствием. Наездница: свои бёдра или его грудь; Верхом: свои рёбра или его грудь; Над ним: его грудь; Откинувшись: его бёдра; Спиной: свой таз или бёдра; На корточках и На коленях: свои бёдра или рёбра. Когда он держит её, она опирается на его предплечья.")
                 : T("A ready-made pose: it sets several of the pose settings at once, and she moves into it smoothly. You can still adjust each of them after.",
                     "Готовая поза: задаёт сразу несколько настроек позы, и она плавно в неё переходит. После этого каждую можно подправить отдельно."));
         }

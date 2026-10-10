@@ -76,6 +76,8 @@ namespace CMAScenes
                 case "over him": return T("Over him", "Над ним");
                 case "leaning back": return T("Leaning back", "Откинувшись");
                 case "reverse": return T("Reverse", "Спиной");
+                case "squatting": return T("Squatting", "На корточках");
+                case "kneeling": return T("Kneeling", "На коленях");
                 default: return name ?? "";
             }
         }

@@ -73,7 +73,7 @@ namespace CMAScenes
 
         // The glutes and, if asked for, the chest wobble as soft tissue. Each is a mass on a spring that is shaken by the
         // acceleration of the hips, so it lags behind every bounce and rings on after it, a little differently on each side.
-        internal static void Wobble(Woman w, Vector3 hipMotion, float shakeW)
+        internal static void Wobble(Woman w, Vector3 hipMotion, float shakeW, float gluteGain = 1f, float gluteLimit = 0.06f)
         {
             if (shakeW <= 0.0005f)
             {
@@ -103,9 +103,9 @@ namespace CMAScenes
             }
             Vector3 shake = Vector3.ClampMagnitude(w.hipAcc, 80f);
 
-            float gain = Plugin.ButtAmplitude.Value / 0.03f * 2.4f;
-            w.jglL.Step(shake, gain, dt);
-            w.jglR.Step(shake, gain, dt);
+            float gain = Plugin.ButtAmplitude.Value / 0.03f * 2.4f * Mathf.Max(0f, gluteGain);
+            w.jglL.Step(shake, gain, dt, gluteLimit);
+            w.jglR.Step(shake, gain, dt, gluteLimit);
             w.glL?.Offset(w.jglL.x);
             w.glR?.Offset(w.jglR.x);
             if (Plugin.ShakeChest.Value)

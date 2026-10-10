@@ -240,8 +240,7 @@ namespace CMAScenes
             {
                 handsOn = me.AutoHands(herBack);
             }
-            if (me.m_holdW > 0.5f && !herBack && !string.Equals(handsOn, "HisChest", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(handsOn, "Shoulders", StringComparison.OrdinalIgnoreCase) && !string.Equals(handsOn, "Floor", StringComparison.OrdinalIgnoreCase))
+            if (me.m_holdW > 0.5f && !herBack)
             {
                 // (Held by him, she lets herself be: her hands on his forearms, which hold her hips. On his chest only where she
                 // leans onto him for it: sitting up or leaning back that took a bend of 50 to 80 deg her pose did not have, and
@@ -270,6 +269,8 @@ namespace CMAScenes
             bool backThere = !herBack && me.m_heroReady && me.m_heroThighL != null && me.m_heroThighR != null && me.m_heroKneeL != null && me.m_heroKneeR != null;
             float onBack = Glide(w, G.RideHandsBack, backThere && string.Equals(handsOn, "Behind", StringComparison.OrdinalIgnoreCase) && riding ? 1f : 0f);
             onBack *= 1f - onSide;
+            float onHips = Glide(w, G.RideHandsHips, string.Equals(handsOn, "OwnHips", StringComparison.OrdinalIgnoreCase) ? 1f : 0f);
+            onHips *= 1f - onSide;
             onChest *= 1f - onBack;
             onUnder *= 1f - onBack;
             onFloor *= 1f - onBack;
@@ -281,12 +282,18 @@ namespace CMAScenes
             onUnder *= 1f - onArms;
             onFloor *= 1f - onArms;
             onBack *= 1f - onArms;
-            float onThigh = Mathf.Clamp01(1f - onChest - onUnder - onFloor - onSide - onBack - onArms);
+            onHips *= 1f - onArms;
+            float onThigh = Mathf.Clamp01(1f - onChest - onUnder - onFloor - onSide - onBack - onArms - onHips);
             Vector3 sideFrom = me.m_vulvaHomeValid ? new Vector3(me.m_vulvaHome.x, pelvisBase.y, me.m_vulvaHome.z) : pelvisBase + me.m_lastHipOffset;
             Vector3[] chestSpot = s_rideChestSpot;
             chestSpot[0] = chestSpot[1] = Vector3.zero;
             float chestBend = 0f;
             float leanSet = Plugin.RideLean.Value;
+            string poseName = Plugin.RidePoseType.Value;
+            bool chestBracePose = string.Equals(poseName, "Over him", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(poseName, "Astride", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(poseName, "Kneeling", StringComparison.OrdinalIgnoreCase);
+            float chestBendLimit = chestBracePose ? 22f : 40f;
             if (onChest > 0.001f && me.m_heroChest != null && w.arms[0] != null && w.arms[1] != null)
             {
                 // On him, as far up him toward his chest as her arms reach: tried from his chest down toward his belly,
@@ -310,7 +317,7 @@ namespace CMAScenes
                     Vector3 mid = home + fwd * f;
                     float top = me.HeroTopAt(mid);
                     mid.y = (float.IsNegativeInfinity(top) ? me.m_penisGoalBase.y + 0.02f : top) + 0.025f;
-                    for (float a = 0f; a <= 40f; a += 4f)
+                    for (float a = 0f; a <= chestBendLimit; a += 2f)
                     {
                         if ((me.SpineAt(w, right, leanSet, a, 0f, me.m_holeTilt, shoulders) - mid).sqrMagnitude <= armLen * armLen * 0.85f)
                         {
@@ -341,7 +348,7 @@ namespace CMAScenes
                     {
                         hFwd = fwd;
                     }
-                    Vector3 spot = home + hFwd * me.m_chestFar + (i == 0 ? -handSide : handSide) * 0.08f;
+                    Vector3 spot = home + hFwd * me.m_chestFar + (i == 0 ? -handSide : handSide) * 0.14f;
                     float top = me.HeroTopAt(spot);
                     spot.y = (float.IsNegativeInfinity(top) ? me.m_penisGoalBase.y + 0.02f : top) + 0.025f;
                     chestSpot[i] = spot;
@@ -353,7 +360,7 @@ namespace CMAScenes
                 onChest -= giveUp;
                 onThigh += giveUp;
                 // (Her back is bent by that much more, further down, with what bends her over him.)
-                chestBend = me.m_chestLean * onChest;
+                chestBend = Mathf.Min(me.m_chestLean, chestBendLimit) * onChest;
                 if (Time.unscaledTime >= me.m_chestLogAt)
                 {
                     me.m_chestLogAt = Time.unscaledTime + 20f;
@@ -642,6 +649,14 @@ namespace CMAScenes
                 Vector3 pole = onThigh * thighPole;
                 Vector3 layBack = onThigh * top;
                 Vector3 layWish = onThigh * thighWish;
+                if (onHips > 0.001f)
+                {
+                    // Her own iliac crest follows the pelvis, so this resting place stays under her palms in Reverse.
+                    target += onHips * (hipJoint + outward * 0.09f + front * 0.04f + Vector3.up * 0.08f);
+                    pole += onHips * (outward * 0.9f - Vector3.up * 0.2f);
+                    layBack += onHips * (outward * 0.8f + Vector3.up * 0.2f).normalized;
+                    layWish += onHips * (Vector3.down * 0.8f + front * 0.2f).normalized;
+                }
                 if (onUnder > 0.001f)
                 {
                     // Under her breast of that side, the palm against her ribs, fingers inward and up, the elbow down and out.
@@ -719,7 +734,7 @@ namespace CMAScenes
                     }
                 }
                 // (Between behind her and before her, her hand goes round by her side, not through her body.)
-                float round = Mathf.Clamp01(4f * onBack * (onChest + onFloor + onSide + onUnder + onArms + 0.5f * onThigh));
+                float round = Mathf.Clamp01(4f * onBack * (onChest + onFloor + onSide + onUnder + onArms + 0.5f * onThigh + 0.5f * onHips));
                 target += round * (outward * 0.12f + Vector3.up * 0.05f);
                 // Out of her reach (his chest when she cannot bend so far, his thighs behind her when she sits up): her hand
                 // goes to her own thigh rather than her arm being stretched straight at the air over him. Only for what is
@@ -823,7 +838,9 @@ namespace CMAScenes
             }
 
             // The soft bones add their own bounce, shaken by how the hips really moved.
-            Wobble(w, stroke, shakeW);
+            // The ride's hip acceleration rises with the square of its tempo. Keep the glute bones' spring motion subtle
+            // and bounded here, so faster strokes cannot pull the buttock shape inward; the twerk keeps its fuller wobble.
+            Wobble(w, stroke, shakeW, 0.3f, 0.02f);
         }
     }
 }
