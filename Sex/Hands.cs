@@ -12,8 +12,9 @@ namespace CMAScenes
 
         // How far down her thighs her hands lie (eased), and where her hips were carried the frame before.
         private readonly float[] m_handPart = { 0.62f, 0.62f };
-        // Her hands on him: how far up him from her hips they lie, how far she leans for that (both eased).
-        private float m_chestFar = 0.3f, m_chestLean = 30f, m_chestLogAt, m_chestOk = 1f;
+        // Each hand finds its own reachable contact point on him; the shared bend follows the farther reach.
+        private readonly float[] m_chestFar = { 0.3f, 0.3f }, m_chestOk = new float[2];
+        private float m_chestLean, m_chestLogAt;
         // (When a hand of hers was last told to be out of her reach.)
         private float m_reachLogAt;
 

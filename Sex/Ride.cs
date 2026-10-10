@@ -33,6 +33,8 @@ namespace CMAScenes
         private float m_rideIn;
         private int m_rideInFrame = -10;
         private Vector3 m_lastHipOffset;
+        private string m_ridePoseName = "";
+        private float m_ridePoseChangedAt = -10f, m_rideKneelFrom;
 
         // The nearest woman to the player's view is the one who rides.
         private void StartRide()
@@ -58,6 +60,11 @@ namespace CMAScenes
             m_heroLowTries = 0;
             m_floorKnown = false;
             PoseFixReset();
+            m_ridePoseName = "";
+            m_ridePoseChangedAt = -10f;
+            m_chestFar[0] = m_chestFar[1] = 0.3f;
+            m_chestOk[0] = m_chestOk[1] = 0f;
+            m_chestLean = 0f;
             m_bendCut = 0f;
             m_heroLift = 0f;
             m_heroBaseSet = false;
@@ -201,6 +208,21 @@ namespace CMAScenes
                 onW = 1f;
             }
             bool reverse = string.Equals(Plugin.RideFacing.Value, "Away", StringComparison.OrdinalIgnoreCase);
+            string poseName = Plugin.RidePoseType.Value ?? "";
+            if (!string.Equals(poseName, me.m_ridePoseName, StringComparison.OrdinalIgnoreCase))
+            {
+                if (me.m_ridePoseName.Length > 0)
+                {
+                    me.m_ridePoseChangedAt = Time.unscaledTime;
+                    me.m_rideKneelFrom = w.gHas[G.RideKneel] ? w.gB[G.RideKneel] : 0f;
+                }
+                me.m_ridePoseName = poseName;
+            }
+            float poseT = Mathf.Clamp01((Time.unscaledTime - me.m_ridePoseChangedAt) / Mathf.Max(0.8f, Plugin.PoseRamp.Value));
+            // Ease the load off her legs, let her hands find support, then bring the stroke back after the new stance.
+            float poseStroke = poseT < 0.4f
+                ? Mathf.Lerp(1f, 0.3f, Mathf.SmoothStep(0f, 1f, poseT / 0.4f))
+                : Mathf.Lerp(0.3f, 1f, Mathf.SmoothStep(0f, 1f, (poseT - 0.4f) / 0.6f));
             // (On the downstroke in Reverse Cowgirl his palms cup under her bottom and rise into it a little, as if supporting her.
             // The hip stroke itself is unchanged.)
             me.m_holdSupport = reverse && me.m_mount == 3 && me.m_in && me.m_toggled
@@ -212,7 +234,7 @@ namespace CMAScenes
             // her, and what slides her hips across the floor is kept small: she is on a shaft.
             float climax = me.ClimaxNow();
             me.WombDiveStep(dt);
-            float strokeW = shakeW * Mathf.Lerp(1f, me.m_rideW, onW) * (1f - climax) * (1f - 0.55f * me.m_holdW);
+            float strokeW = shakeW * Mathf.Lerp(1f, me.m_rideW, onW) * (1f - climax) * (1f - 0.55f * me.m_holdW) * poseStroke;
             // (Longer or shorter where she leads and the tempo alone does not bring her to her rhythm: Lead.cs.)
             float riseSet = Plugin.RideBounce.Value * me.m_leadStroke * depth * (mo.bounce + 0.5f * mo.circle);
             float riseTop = Mathf.Lerp(riseSet, Mathf.Min(riseSet, Mathf.Max(0f, me.m_sTop - me.m_sSeat)), onW);
@@ -221,11 +243,16 @@ namespace CMAScenes
             me.m_strokeSet = Plugin.RideBounce.Value * mo.amp;
             me.m_strokeRoom = Mathf.Max(0f, me.m_sTop - me.m_sSeat);
             me.m_strokeNow = riseTop * strokeW;
+            float shortRoom = me.m_mount == 3 && me.m_in
+                ? 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(me.m_strokeRoom / 0.025f)) : 0f;
             Vector3 slide =
                 fwd * ((s * Plugin.RideGrind.Value * mo.sway + s * dir * Plugin.CircleRadius.Value * mo.circle) * mo.amp)
                 + right * (c * Plugin.CircleRadius.Value * mo.circle * mo.amp)
                 + right * (mo.weight * 0.012f);
             slide = Vector3.Lerp(slide, Vector3.ClampMagnitude(slide * 0.5f, 0.025f), onW);
+            // When depth or the learned tip margin leaves little vertical travel, she rolls her pelvis within the
+            // line of his shaft instead of accelerating an invisible up/down stroke.
+            slide += fwd * (sB * 0.004f * depth * mo.bounce * shortRoom * onW);
             Vector3 stroke = (Vector3.up * (0.5f * (1f + sB) * riseTop) + slide) * strokeW;
 
             // The lean, and the rock of the pelvis with every stroke, which travels up the spine a moment later.
@@ -240,7 +267,11 @@ namespace CMAScenes
             {
                 handsOn = me.AutoHands(herBack);
             }
-            if (me.m_holdW > 0.5f && !herBack)
+            if (poseT < 0.45f)
+            {
+                handsOn = "Thighs";
+            }
+            else if (me.m_holdW > 0.5f && !herBack)
             {
                 // (Held by him, she lets herself be: her hands on his forearms, which hold her hips. On his chest only where she
                 // leans onto him for it: sitting up or leaning back that took a bend of 50 to 80 deg her pose did not have, and
@@ -289,86 +320,85 @@ namespace CMAScenes
             chestSpot[0] = chestSpot[1] = Vector3.zero;
             float chestBend = 0f;
             float leanSet = Plugin.RideLean.Value;
-            string poseName = Plugin.RidePoseType.Value;
             bool chestBracePose = string.Equals(poseName, "Over him", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(poseName, "Astride", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(poseName, "Kneeling", StringComparison.OrdinalIgnoreCase);
             float chestBendLimit = chestBracePose ? 22f : 40f;
-            if (onChest > 0.001f && me.m_heroChest != null && w.arms[0] != null && w.arms[1] != null)
+            if (onChest > 0.001f && me.m_heroChest != null)
             {
-                // On him, as far up him toward his chest as her arms reach: tried from his chest down toward his belly,
-                // leaning her no more than it takes (and no more than she can), and the first place she reaches is it.
-                float armLen = float.MaxValue;
-                Vector3 shoulders = Vector3.zero;
+                // Search separately for each palm. A shorter arm can settle lower on his torso without dragging the
+                // other one off its contact or making both wrists reach for the same unreachable point.
+                Vector3 pelvisThen = pelvisBase + me.m_lastHipOffset;
+                Vector3 home = me.m_vulvaHomeValid ? new Vector3(me.m_vulvaHome.x, pelvisThen.y, me.m_vulvaHome.z) : pelvisThen;
+                float far = Mathf.Clamp(Vector3.Dot(me.m_heroChest.position - home, fwd), 0.2f, 0.6f);
+                Vector3 hFwd = Vector3.ProjectOnPlane(me.m_heroFwd, Vector3.up);
+                Vector3 handSide = right;
+                if (hFwd.sqrMagnitude > 0.5f && Vector3.Dot(hFwd.normalized, fwd) > 0.7f)
+                {
+                    hFwd.Normalize();
+                    Vector3 hSide = Vector3.Cross(Vector3.up, hFwd).normalized;
+                    handSide = Vector3.Dot(hSide, right) >= 0f ? hSide : -hSide;
+                }
+                else
+                {
+                    hFwd = fwd;
+                }
+                float bestLeanTogether = 0f;
                 for (int i = 0; i < 2; i++)
                 {
                     Limb arm = w.arms[i];
-                    armLen = Mathf.Min(armLen, (arm.fore.t.position - arm.upper.t.position).magnitude + (arm.end.t.position - arm.fore.t.position).magnitude);
-                    shoulders += 0.5f * arm.upper.t.position;
-                }
-                Vector3 pelvisThen = pelvisBase + me.m_lastHipOffset;
-                Vector3 torso = shoulders - pelvisBase;
-                Vector3 home = me.m_vulvaHomeValid ? new Vector3(me.m_vulvaHome.x, pelvisThen.y, me.m_vulvaHome.z) : pelvisThen;
-                float far = Mathf.Clamp(Vector3.Dot(me.m_heroChest.position - home, fwd), 0.2f, 0.6f);
-                float bestFar = 0.17f, bestLean = 0f;
-                bool found = false;
-                for (float f = far; f >= 0.17f && !found; f -= 0.03f)
-                {
-                    Vector3 mid = home + fwd * f;
-                    float top = me.HeroTopAt(mid);
-                    mid.y = (float.IsNegativeInfinity(top) ? me.m_penisGoalBase.y + 0.02f : top) + 0.025f;
-                    for (float a = 0f; a <= chestBendLimit; a += 2f)
+                    if (arm == null)
                     {
-                        if ((me.SpineAt(w, right, leanSet, a, 0f, me.m_holeTilt, shoulders) - mid).sqrMagnitude <= armLen * armLen * 0.85f)
+                        me.m_chestOk[i] = 0f;
+                        continue;
+                    }
+                    Vector3 shoulder = arm.upper.t.position;
+                    float armLen = (arm.fore.t.position - shoulder).magnitude + (arm.end.t.position - arm.fore.t.position).magnitude;
+                    Vector3 side = (i == 0 ? -handSide : handSide) * 0.14f;
+                    float bestFar = 0.17f, bestLean = 0f;
+                    bool found = false;
+                    for (float f = far; f >= 0.17f && !found; f -= 0.025f)
+                    {
+                        Vector3 candidate = home + hFwd * f + side;
+                        float surface = me.HeroTopAt(candidate);
+                        candidate.y = (float.IsNegativeInfinity(surface) ? me.m_penisGoalBase.y + 0.02f : surface) + 0.025f;
+                        for (float a = 0f; a <= chestBendLimit; a += 2f)
                         {
-                            bestFar = f;
-                            bestLean = a;
-                            found = true;
-                            break;
+                            if ((me.SpineAt(w, right, leanSet, a, 0f, me.m_holeTilt, shoulder) - candidate).sqrMagnitude <= armLen * armLen * 0.82f)
+                            {
+                                bestFar = f;
+                                bestLean = a;
+                                found = true;
+                                break;
+                            }
                         }
                     }
-                }
-                // (Quick to draw her hands in when she cannot reach, slow to move them further up him: they rest.)
-                me.m_chestFar = Mathf.Lerp(me.m_chestFar, bestFar, 1f - Mathf.Exp(-dt / (bestFar < me.m_chestFar ? 0.25f : 1.2f)));
-                me.m_chestLean = Mathf.Lerp(me.m_chestLean, bestLean, 1f - Mathf.Exp(-dt / 0.6f));
-                for (int i = 0; i < 2; i++)
-                {
-                    // (Along his body and across it, not along her hips: her hips turn as she grinds, and her palms went with them, back and
-                    // forth over him as if she stroked him.)
-                    Vector3 hFwd = Vector3.ProjectOnPlane(me.m_heroFwd, Vector3.up);
-                    Vector3 hSide = Vector3.Cross(Vector3.up, hFwd);
-                    Vector3 handSide = right;
-                    if (hFwd.sqrMagnitude > 0.5f && Vector3.Dot(hFwd.normalized, fwd) > 0.7f)
+                    // Draw in quickly if reach is lost, move up slowly once she has a reliable place to bear weight.
+                    me.m_chestFar[i] = Mathf.Lerp(me.m_chestFar[i], bestFar, 1f - Mathf.Exp(-dt / (bestFar < me.m_chestFar[i] ? 0.25f : 1.2f)));
+                    me.m_chestOk[i] = Mathf.MoveTowards(me.m_chestOk[i], found ? 1f : 0f, dt / (found ? 0.65f : 0.25f));
+                    if (found)
                     {
-                        hFwd.Normalize();
-                        hSide = Vector3.Cross(Vector3.up, hFwd).normalized;
-                        handSide = Vector3.Dot(hSide, right) >= 0f ? hSide : -hSide;
+                        bestLeanTogether = Mathf.Max(bestLeanTogether, bestLean * me.m_chestOk[i]);
                     }
-                    else
-                    {
-                        hFwd = fwd;
-                    }
-                    Vector3 spot = home + hFwd * me.m_chestFar + (i == 0 ? -handSide : handSide) * 0.14f;
+                    Vector3 spot = home + hFwd * me.m_chestFar[i] + side;
                     float top = me.HeroTopAt(spot);
                     spot.y = (float.IsNegativeInfinity(top) ? me.m_penisGoalBase.y + 0.02f : top) + 0.025f;
                     chestSpot[i] = spot;
+                    if (Time.unscaledTime >= me.m_chestLogAt)
+                    {
+                        Plugin.ModLog.LogInfo($"Ride: her {(i == 0 ? "left" : "right")} palm: {(found ? "reaches" : "cannot reach")} {bestFar * 100f:F0} cm along him (chest {far * 100f:F0} cm); arm {armLen * 100f:F0} cm, added bend {bestLean:F0} deg.");
+                    }
                 }
-                // (Where she cannot reach him by bending so far (40 deg), her palms stay on her thighs rather than wring her arms
-                // to reach: the weight of his chest goes to her thighs, eased over half a second.)
-                me.m_chestOk = Mathf.MoveTowards(me.m_chestOk, found ? 1f : 0f, dt / 0.5f);
-                float giveUp = onChest * (1f - me.m_chestOk);
-                onChest -= giveUp;
-                onThigh += giveUp;
-                // (Her back is bent by that much more, further down, with what bends her over him.)
-                chestBend = Mathf.Min(me.m_chestLean, chestBendLimit) * onChest;
                 if (Time.unscaledTime >= me.m_chestLogAt)
                 {
                     me.m_chestLogAt = Time.unscaledTime + 20f;
-                    Plugin.ModLog.LogInfo($"Ride: her hands on him: {(found ? "she reaches him" : "she does not reach him anywhere")} {bestFar * 100f:F0} cm up him from her hips (his chest is {far * 100f:F0} cm up), her back bent {bestLean:F0} deg further for it; her arms are {armLen * 100f:F0} cm long.");
                 }
+                me.m_chestLean = Mathf.Lerp(me.m_chestLean, bestLeanTogether, 1f - Mathf.Exp(-dt / 0.6f));
+                chestBend = Mathf.Min(me.m_chestLean, chestBendLimit) * onChest;
             }
             float lean = (Glide(w, G.RideLean, leanSet) + mo.leanExtra * 0.5f) * poseW;
             float pitch = Plugin.RideTilt.Value * depth * (cB * mo.bounce + s * mo.sway + s * dir * mo.circle) * strokeW;
+            pitch += 3f * depth * mo.bounce * shortRoom * cB * strokeW;
             float roll = Plugin.RollDegrees.Value * c * mo.circle * strokeW + mo.weight * 1.6f * strokeW;
             float wave = Plugin.RideTilt.Value * depth * mo.bounce * strokeW;
             float waistPitch = -wave * 0.3f * Skew(phase + Mathf.PI * 0.5f - 0.75f, skew);
@@ -525,7 +555,7 @@ namespace CMAScenes
             // (On a place too narrow for a knee of hers between his body and its edge, she stands astride it instead, her feet on
             // the floor. Feet.cs KneelRoom.)
             bool kneelSet = string.Equals(Plugin.RideLegs.Value, "Knees", StringComparison.OrdinalIgnoreCase) && me.KneelRoom(between, across);
-            float kneel = Glide(w, G.RideKneel, kneelSet ? 1f : 0f);
+            float kneel = Glide(w, G.RideKneel, poseT < 0.25f ? me.m_rideKneelFrom : kneelSet ? 1f : 0f);
             me.m_kneelPosed = kneel * poseW;
             for (int i = 0; i < 2; i++)
             {
@@ -645,10 +675,12 @@ namespace CMAScenes
                 Vector3 thighSpot = Vector3.Lerp(hipJoint, knee, me.m_handPart[i]) + top * 0.085f + outward * 0.02f;
                 Vector3 thighPole = outward * 0.9f - fwd * 0.5f - Vector3.up * 0.2f;
                 Vector3 thighWish = (thigh - outward * 0.22f).normalized;
-                Vector3 target = onThigh * thighSpot;
-                Vector3 pole = onThigh * thighPole;
-                Vector3 layBack = onThigh * top;
-                Vector3 layWish = onThigh * thighWish;
+                float chestHere = onChest * me.m_chestOk[i];
+                float thighHere = onThigh + onChest - chestHere;
+                Vector3 target = thighHere * thighSpot;
+                Vector3 pole = thighHere * thighPole;
+                Vector3 layBack = thighHere * top;
+                Vector3 layWish = thighHere * thighWish;
                 if (onHips > 0.001f)
                 {
                     // Her own iliac crest follows the pelvis, so this resting place stays under her palms in Reverse.
@@ -669,13 +701,13 @@ namespace CMAScenes
                     layBack += onUnder * (front * 0.85f - chestUp * 0.4f + outward * 0.2f).normalized;
                     layWish += onUnder * (-outward * 0.8f + chestUp * 0.35f + front * 0.15f).normalized;
                 }
-                if (onChest > 0.001f)
+                if (chestHere > 0.001f)
                 {
                     // On him: palm down, fingers toward his head and a little inward.
-                    target += onChest * chestSpot[i];
-                    pole += onChest * (outward + Vector3.up * 0.4f);
-                    layBack += onChest * Vector3.up;
-                    layWish += onChest * (fwd * 0.9f - outward * 0.42f).normalized;
+                    target += chestHere * chestSpot[i];
+                    pole += chestHere * (outward + Vector3.up * 0.4f);
+                    layBack += chestHere * Vector3.up;
+                    layWish += chestHere * (fwd * 0.9f - outward * 0.42f).normalized;
                 }
                 if (onFloor > 0.001f)
                 {
@@ -734,13 +766,13 @@ namespace CMAScenes
                     }
                 }
                 // (Between behind her and before her, her hand goes round by her side, not through her body.)
-                float round = Mathf.Clamp01(4f * onBack * (onChest + onFloor + onSide + onUnder + onArms + 0.5f * onThigh + 0.5f * onHips));
+                float round = Mathf.Clamp01(4f * onBack * (chestHere + onFloor + onSide + onUnder + onArms + 0.5f * thighHere + 0.5f * onHips));
                 target += round * (outward * 0.12f + Vector3.up * 0.05f);
                 // Out of her reach (his chest when she cannot bend so far, his thighs behind her when she sits up): her hand
                 // goes to her own thigh rather than her arm being stretched straight at the air over him. Only for what is
                 // well out of reach, and eased, so that it does not come and go with every stroke.
                 float beyond = (target - shoulder).magnitude - armLen;
-                float fallWant = onThigh > 0.98f ? 0f : Mathf.Clamp01((beyond - 0.04f) / 0.08f);
+                float fallWant = thighHere > 0.98f ? 0f : Mathf.Clamp01((beyond - 0.04f) / 0.08f);
                 arm.reachFall = Mathf.Lerp(arm.reachFall, fallWant, 1f - Mathf.Exp(-dt / (fallWant > arm.reachFall ? 0.5f : 1.2f)));
                 if (fallWant > 0.5f && Time.unscaledTime >= me.m_reachLogAt)
                 {
@@ -778,7 +810,7 @@ namespace CMAScenes
                 // How her hand lies, should her arms be posed as CMA Shake posed them. On him or on the floor: flat, palm down,
                 // fingers toward his head and a little inward. (Beside him her fingers point ahead and a little outward; on him,
                 // a little inward; behind her on his thighs they point back along them, toward his feet.)
-                float flatAll = onChest + onFloor + onSide + onBack + onArms;
+                float flatAll = chestHere + onFloor + onSide + onBack + onArms;
                 Vector3 fingers = Vector3.Slerp((fwd * 0.9f - outward * 0.42f).normalized, (fwd * 0.95f + outward * 0.3f).normalized, onSide);
                 fingers = Vector3.Slerp(fingers, (-fwd * 0.9f + outward * 0.2f).normalized, onBack / Mathf.Max(0.001f, flatAll));
                 if (Plugin.RideNaturalArms.Value)

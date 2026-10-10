@@ -710,6 +710,13 @@ namespace CMAScenes
                                     MountLog($"at the top of her strokes only {m_tipInLow * 100f:F1} cm of him was left in her (by the game's entrance, as she is drawn): her strokes stop {more * 100f:F1} cm sooner, {(((m_holeAnal ? 0.055f : 0.035f) + m_topCut) * 100f):F1} cm short of his tip.");
                                 }
                             }
+                            else if (m_tipInLow < float.MaxValue && m_tipInLow > least + 0.025f
+                                && m_topCut > 0f && now - m_mountAt > 12f && m_herPain < 0.2f)
+                            {
+                                // The earlier safety cut is allowed back only after the game's entrance has held a
+                                // generous margin for several strokes. Never force extra depth through pain.
+                                m_topCut = Mathf.Max(0f, m_topCut - 0.005f);
+                            }
                             m_tipInLow = float.MaxValue;
                         }
                     }

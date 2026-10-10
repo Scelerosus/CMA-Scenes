@@ -213,3 +213,10 @@ Reduced ride-only glute-bone wobble to 30% of its former response and limited it
 
 - The Sex page has three short views: Scene for place, hole and pose; Movement for tempo, depth and movement options; Details for X-ray, orgasm and condom. Start/stop and current status stay above the navigation on every view.
 - Switching views returns to their top so settings cannot open halfway down the previous view. Existing configuration keys and actions are unchanged.
+
+## 0.3.20 (2026-10-10) - smoother riding and pose changes
+
+- When the game leaves very little safe vertical travel, the rider switches to a small pelvic rock and the automatic tempo stops chasing invisible strokes. A previously learned tip margin relaxes slowly only when the game's entrance reports several safe strokes and she has no pain.
+- Each palm searches for its own reachable place on his torso and glides between that contact and her own thigh. The contact points are fixed to his body, with extra room for her wrist; one shorter arm no longer sends both hands away.
+- A pose change eases down her stroke, puts her hands on her thighs, holds the old leg support briefly, then moves the legs and restores the new pose's hands and stroke. The game's depth and remount safeguards remain in control.
+- Compiled with `SkipInstall`; live visual comparison remains necessary.

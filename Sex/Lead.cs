@@ -302,6 +302,11 @@ namespace CMAScenes
                 m_leadStroke = Mathf.Lerp(m_leadStroke, longer, 1f - Mathf.Exp(-dt / 2f));
                 float len = Mathf.Max(0.025f, Mathf.Min(set * m_leadStroke, room));
                 float rate = want / (2f * len);
+                if (m_strokeRoom < 0.01f)
+                {
+                    // Little travel on him calls for a measured rocking rhythm, not faster and faster phantom strokes.
+                    rate = Mathf.Min(rate, Mathf.Clamp(Plugin.RideFrequency.Value, 0.6f, 1.4f));
+                }
                 // (Gently while she warms up, however short her strokes are then.)
                 float warm = Plugin.Alive(Plugin.RideWarmUp) ? Soft(m_warm) : 1f;
                 rate = Mathf.Clamp(rate, 0.2f, Mathf.Lerp(Mathf.Min(0.7f, cap), cap, warm));
