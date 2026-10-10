@@ -44,7 +44,7 @@ namespace CMAScenes
     {
         // (Degrees, from the hand in line with its forearm, thumb up. A forearm turns the palm down some 85 and up some 80;
         // a wrist bends back some 75 and forward some 70, and sideways 20 toward the thumb and 30 toward the little finger.)
-        private static readonly float[] s_wristLogAt = new float[2];
+        private static readonly float[] s_wristLogAt = new float[2], s_fingerLogAt = new float[2];
         private const float PronateMost = 85f, SupinateMost = 80f, ExtendMost = 75f, FlexMost = 70f, RadialMost = 20f, UlnarMost = 30f;
 
         // Her arm put with its hand at "target", her elbow toward "pole" or round from it as her wrist asks, and her hand
@@ -591,6 +591,27 @@ namespace CMAScenes
                 {
                     b.Commit();
                 }
+            }
+            if (Time.unscaledTime >= s_fingerLogAt[arm.side & 1])
+            {
+                // (For the record, every few seconds: how far each joint of each finger is curled toward the palm now.)
+                s_fingerLogAt[arm.side & 1] = Time.unscaledTime + 6f;
+                var sb = new System.Text.StringBuilder();
+                foreach (RotSlot[] f in arm.fingers)
+                {
+                    sb.Append(sb.Length > 0 ? " | " : "");
+                    for (int j = 0; j + 1 < f.Length; j++)
+                    {
+                        Vector3 from = j == 0 ? ahead : f[j].t.position - f[j - 1].t.position;
+                        Vector3 axis = Vector3.Cross(from, palm);
+                        Vector3 run = f[j + 1].t.position - f[j].t.position;
+                        if (axis.sqrMagnitude > 1e-10f && run.sqrMagnitude > 1e-10f)
+                        {
+                            sb.Append(j > 0 ? " " : "").Append(Vector3.SignedAngle(from, Vector3.ProjectOnPlane(run, axis.normalized), axis.normalized).ToString("F0"));
+                        }
+                    }
+                }
+                Plugin.ModLog.LogInfo($"Arms: {arm.who} {(arm.side == 0 ? "left" : "right")} fingers curled toward the palm, deg, by joint (straight {straight:F2}, grip {grip:F2}): {sb}.");
             }
         }
     }

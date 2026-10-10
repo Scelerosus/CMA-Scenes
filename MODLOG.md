@@ -137,3 +137,8 @@ Hands on his chest: the left wrist went to strain 18-33 (pronation pinned at 85)
 between two turns of the arm about its axis (neutral of the left wrist 0.35,0,0.94 then 1.0,0,-0.05) = the arm wringing in motion.
 `ArmSolve` now charges for leaving the swivel it is at (0.35 * ((ang - swivel)/30)^2). Not touched: her back bends 20-28 deg further
 to reach his chest 37 cm up (`Ride: her hands on him`); the wrist wants that much lean (less lean = more extension).
+
+## 0.3.4 (2026-10-10) - diagnostics only
+0.3.3 log: fingers found (`Finger10..40 (3)`), swivel steady and mirrored left/right (strain 1-2 on his chest). Screenshots: her right hand lies
+flat on his belly; her left hand hangs at her crotch as a clenched fist with a bent wrist ("cannot reach: rests on her thigh"). New log line
+every 6 s: `Arms: ... fingers curled toward the palm, deg, by joint` (to see whether the left fingers are straightened at all).
