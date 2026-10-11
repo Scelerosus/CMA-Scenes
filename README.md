@@ -3,7 +3,7 @@
 A BepInEx (IL2CPP) plugin for *Corrupted Modeling Agency* 0.66 (adult game, 18+). It is the successor of CMA Shake:
 a choice of places for the sex (furniture found in the room), natural arms, a plugin-made condom and an X-ray view.
 
-**Status: 0.3.28, experimental.** See `MODLOG.md` for the change history and known limitations.
+**Status: 0.3.29, experimental.** See `MODLOG.md` for the change history and known limitations.
 
 ## Build
 Needs the game with BepInEx 6 (IL2CPP) installed and run once (so that `BepInEx\interop` exists).

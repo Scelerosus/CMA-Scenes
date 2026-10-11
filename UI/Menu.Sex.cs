@@ -108,6 +108,11 @@ namespace CMAScenes
             HoleRow(st);
             PoseRow(st, T("Position", "Поза"), Poses.Ride, Plugin.RidePoseType);
             CardEnd();
+
+            CardBegin(st, T("View", "Обзор"));
+            Slider(st, T("Raise his head", "Приподнять голову"), Plugin.RideHeadLift, 0f, 30f, "0", "°", 1f,
+                T("Bends his neck while lying. The game controls the camera.", "Приподнимает голову за счёт шеи в лежачей позе. Камерой управляет сама игра."));
+            CardEnd();
         }
 
         private static void DrawRideMovement(Styles st)
@@ -176,7 +181,7 @@ namespace CMAScenes
             CardEnd();
 
             ResetButton(st, T("Reset everything about the sex", "Сбросить всё про секс"), () =>
-                ResetAll(Plugin.RideFrequency, Plugin.RideBounce, Plugin.RideGrind, Plugin.RideTilt, Plugin.RideSpring, Plugin.RideDepth, Plugin.RideHipsWork, Plugin.RideKeepHard, Plugin.RideEnterSpeed, Plugin.RideAimForward, Plugin.RideAimUp, Plugin.RideCamSteady, Plugin.RideFov,
+                ResetAll(Plugin.RideFrequency, Plugin.RideBounce, Plugin.RideGrind, Plugin.RideTilt, Plugin.RideSpring, Plugin.RideDepth, Plugin.RideHipsWork, Plugin.RideKeepHard, Plugin.RideEnterSpeed, Plugin.RideAimForward, Plugin.RideAimUp, Plugin.RideHeadLift, Plugin.RideFov,
                     Plugin.RideFeet, Plugin.RideLean, Plugin.RideFacing, Plugin.RideHeroShift, Plugin.RideHeroClearance,
                     Plugin.RideWetShine, Plugin.RideWetRelief, Plugin.RideWetDepth, Plugin.RideWetStrings, Plugin.RideAutoAim, Plugin.RideClimax, Plugin.RideBuild, Plugin.RideWaves, Plugin.RideFlow, Plugin.RideMaxSpeed, Plugin.RideLookAtHim, Plugin.RideLegs, Plugin.RideHole, Plugin.RideAnalAimForward, Plugin.RideAnalAimUp, Plugin.CondomAuto, Plugin.CondomColor,
                     Plugin.RideWarmUp, Plugin.RideListen, Plugin.RideTires, Plugin.RideStamina, Plugin.RideBreath, Plugin.RideFinish, Plugin.RideEndAfter, Plugin.RideHeMeets, Plugin.RideHeHolds, Plugin.RideWomb, Plugin.RideFeetAuto, Plugin.RideFlatFeet, Plugin.RideLead, Plugin.RideAlive,

@@ -18,7 +18,7 @@ namespace CMAScenes
     // touches) stayed where the game had her, standing: his hand went through her as she is drawn and was stopped by her
     // as she is not. While she is posed, the bodies of her puppet are carried by her skeleton as it is drawn.
     //
-    // His view. It is smoothed while he lies, and can be given a field of view of its own.
+    // His view uses the native camera, with an optional field of view override.
     public sealed partial class ShakeController
     {
         // ---- his hips ----
@@ -195,7 +195,7 @@ namespace CMAScenes
                     {
                         TurnBone(m_thUpper.t, axis, -m_bendArch * weight);
                     }
-                    TurnBone(m_thNeck.t, axis, m_bendNeck * weight);
+                    TurnBone(m_thNeck.t, axis, (m_bendNeck - Mathf.Clamp(Plugin.RideHeadLift.Value, 0f, 30f)) * weight);
                     TurnBone(m_thLegL.t, -axis, (m_bendThigh[0] + m_bendThighLift[0]) * weight);
                     TurnBone(m_thLegR.t, -axis, (m_bendThigh[1] + m_bendThighLift[1]) * weight);
                     if (m_thKneeL != null)
@@ -232,14 +232,12 @@ namespace CMAScenes
 
         // ---- his view ----
 
-        private Vector3 m_camS;
-        private bool m_camHas;
         private float m_fovWas;
         private bool m_fovSet;
         private Camera m_fovCam;
 
-        // At the end of the frame, after the game has placed its camera: its place is smoothed, and its field of view set.
-        private void CameraSteady()
+        // The game owns camera position and rotation. Only apply an explicitly requested FOV.
+        private void CameraFovStep()
         {
             try
             {
@@ -251,6 +249,7 @@ namespace CMAScenes
                 float fov = Plugin.RideFov.Value;
                 if (fov >= 20f && m_heroW > 0.5f)
                 {
+                    if (m_fovSet && m_fovCam != cam) ReleaseCameraFov();
                     if (!m_fovSet)
                     {
                         m_fovWas = cam.fieldOfView;
@@ -261,22 +260,8 @@ namespace CMAScenes
                 }
                 else if (m_fovSet)
                 {
-                    CameraRelease();
+                    ReleaseCameraFov();
                 }
-                if (!Plugin.RideCamSteady.Value || m_heroW < 0.99f)
-                {
-                    m_camHas = false;
-                    return;
-                }
-                Vector3 at = cam.transform.position;
-                if (!m_camHas || (at - m_camS).sqrMagnitude > 0.09f)
-                {
-                    m_camS = at;
-                    m_camHas = true;
-                    return;
-                }
-                m_camS = Vector3.Lerp(m_camS, at, 1f - Mathf.Exp(-Mathf.Min(Time.unscaledDeltaTime, 0.1f) / 0.18f));
-                cam.transform.position = m_camS;
             }
             catch (Exception)
             {
@@ -284,6 +269,12 @@ namespace CMAScenes
         }
 
         private void CameraRelease()
+        {
+            ReleaseCameraFov();
+            RestoreRideCamera();
+        }
+
+        private void ReleaseCameraFov()
         {
             try
             {
@@ -297,7 +288,6 @@ namespace CMAScenes
             }
             m_fovSet = false;
             m_fovCam = null;
-            m_camHas = false;
         }
 
         // ---- her physical body ----

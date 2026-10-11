@@ -8,6 +8,15 @@ the two must not run together. The old plugin is disabled in the game folder as 
 
 Build: `dotnet build CMAScenes.csproj -c Release -p:SkipInstall=true`, copy `bin\Release\CMAScenes.dll` when the game is closed.
 
+## 0.3.29 (2026-10-11) - native camera and raised head
+
+- User reports that the 0.3.28 Space guards did not stop spinning. Replaced those suppression patches with prefixes on ViewMotor and OrbitFixedMotor RigLateUpdate/PostRigLateUpdate. Native updates still execute.
+- Temporarily disable RotateAnchor, its input alias, actor matching (ViewMotor), and RotateWithAnchor (OrbitFixedMotor) only on the hero's native rig during the lying pose, including transitions. Save and restore original settings when he gets up. This addresses a suspected conflict between camera-driven actor rotation and the mod's lying pose; runtime confirmation is still needed.
+- Removed camera position smoothing. The game owns camera position and rotation. An optional configured FOV still works and is restored separately from motor settings.
+- Raise the head through the neck by 18 degrees by default, with a 0-30 degree slider under Scene / View. The neck adjustment blends with the existing pose weight.
+- Release build succeeds without warnings. Game was closed during installation; Space behaviour and framing have not yet been observed with this version.
+- Previous installed DLL backed up under `%LOCALAPPDATA%\CMAScenes\backups\native-camera-0.3.29\CMAScenes.dll`.
+
 ## 0.3.28 (2026-10-11) - Space camera guard
 
 - Inspected the installed 0.66 interop metadata: Camera3DViewInputs has three Focus overloads, but the old Harmony guard patched only the parameterless overload. All three and FocusAction are now guarded.

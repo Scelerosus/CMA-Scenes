@@ -134,7 +134,7 @@ namespace CMAScenes
         internal static ConfigEntry<bool> RideFlatFeet;
         internal static ConfigEntry<float> RideHeroClearance;
         internal static ConfigEntry<float> RideHeroShift;
-        internal static ConfigEntry<bool> RideCamSteady;
+        internal static ConfigEntry<float> RideHeadLift;
         internal static ConfigEntry<float> RideFov;
         internal static ConfigEntry<float> RideWetShine;
         internal static ConfigEntry<bool> RideWetRelief;
@@ -291,7 +291,7 @@ namespace CMAScenes
             RideFlatFeet = Config.Bind("Ride", "FlatFeetInHeels", false, "The game's heel system stands her on her toes and lifts her pelvis by the height of her heels after she is posed. That lift is measured and taken up by itself, so she keeps her heels. On: her heel system is let off for the sex instead (she stands flat, her feet in her shoes) and given back after; for when taking it up does not work.");
             RideHeroClearance = Config.Bind("Ride", "SkinGap", 0.003f, "The gap between his skin and the surface he lies on (floor, bench, table), in metres. The surface is found by rays under him; raise it if he sinks into it, lower it if he floats.");
             RideHeroShift = Config.Bind("Ride", "HeroShift", 0f, "Moves the hero along his own body, in metres (positive = toward his head).");
-            RideCamSteady = Config.Bind("Ride", "SteadyCamera", false, "Smooths the hero's view while he lies under her, so it does not shake.");
+            RideHeadLift = Config.Bind("Ride", "HeadLift", 18f, "Raises his head by bending the neck while lying, in degrees (0-30). The native game camera follows his head.");
             RideFov = Config.Bind("Ride", "FieldOfView", 0f, "The hero's field of view during the ride, in degrees; 0 leaves the game's own.");
             RideWetShine = Config.Bind("Ride", "WetShine", 0.8f, "How much of her fluids shows on him at most: 0 none, 1 the most.");
             RideWetRelief = Config.Bind("Ride", "WetRelief", true, "Her fluids on him are a thin clear film with a shape of its own: a normal map (his skin's own relief kept in it) smooths his skin under the film, so the highlights on him run long and clean, with a soft swell where wet meets dry and long soft runs along the shaft. Off: only the gloss of the wet look.");

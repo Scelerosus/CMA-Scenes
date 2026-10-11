@@ -926,7 +926,7 @@ namespace CMAScenes
                 PenisSee();
                 CondomStep(Time.unscaledDeltaTime);
                 MeasurePenisRest();
-                CameraSteady();
+                CameraFovStep();
                 // The physics scene is told now, not at its next step, so that contact checks made before then see him lying.
                 Physics.SyncTransforms();
                 MeasureSway();

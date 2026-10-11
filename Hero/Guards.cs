@@ -1,157 +1,162 @@
 using System;
+using System.Collections.Generic;
 using HarmonyLib;
+using com.ootii.Cameras;
 using UnityEngine;
 using GameCamera = Assets._ReusableScripts.CuchiCuchi.Dependentes.Ootii.Camaras.MainCharCamera;
-using CameraRig = com.ootii.Cameras.CameraController;
 
 namespace CMAScenes
 {
-    // While the hero lies under her the game's own "look at this" for his camera (the space bar asks for it) is kept
-    // from running: it turns his view toward a point by turning him about his own upright, and lying down his upright
-    // is along the floor, so it never gets there and his view spins like a top.
     internal static class CameraGuard
     {
-        private static float s_loggedAt = -100f;
-
-        private static bool Skip()
+        // Keep native camera updates; detach only their actor-turning behaviour while he lies.
+        private static void Prepare(CameraMotor __instance)
         {
-            try
-            {
-                ShakeController me = ShakeController.Instance;
-                if (me != null && (me.Riding || me.HeroLying))
-                {
-                    if (Time.unscaledTime - s_loggedAt > 20f)
-                    {
-                        s_loggedAt = Time.unscaledTime;
-                        Plugin.ModLog.LogInfo("Ride: the game asked his camera to turn to a point; left out while he lies (it would spin his view).");
-                    }
-                    return false;
-                }
-            }
-            catch (Exception)
-            {
-            }
-            return true;
-        }
-
-        // The free camera's "focus on the selected thing" (the space bar too): it takes the bounds of whatever is selected,
-        // and her bodies and his are carried about by this plugin (to a place, under her), so those bounds are somewhere
-        // else, or huge, and the camera flies off. Left out for as long as the ride is on.
-        private static bool SkipFocus()
-        {
-            try
-            {
-                ShakeController me = ShakeController.Instance;
-                if (me != null && (me.Riding || me.HeroLying))
-                {
-                    if (Time.unscaledTime - s_focusLoggedAt > 20f)
-                    {
-                        s_focusLoggedAt = Time.unscaledTime;
-                        Plugin.ModLog.LogInfo("Ride: the free camera was asked to focus on the selection; left out during the ride (it flew off).");
-                    }
-                    return false;
-                }
-            }
-            catch (Exception)
-            {
-            }
-            return true;
-        }
-
-        private static bool SkipFocusKey(ref bool __result)
-        {
-            if (!SkipFocus())
-            {
-                __result = false;
-                return false;
-            }
-            return true;
-        }
-
-        private static float s_focusLoggedAt = -100f;
-        private static float s_yawLoggedAt = -100f;
-
-        // The game's camera rig can also be given a target yaw/pitch directly. While Space is held
-        // during a ride, do not queue an automatic turn around the hero's now-horizontal upright.
-        private static bool SkipSpaceTurn(CameraRig __instance)
-        {
-            try
-            {
-                ShakeController me = ShakeController.Instance;
-                if (me != null && (me.Riding || me.HeroLying) && Input.GetKey(KeyCode.Space))
-                {
-                    try
-                    {
-                        __instance.ClearTargetYawPitch();
-                    }
-                    catch (Exception)
-                    {
-                        // Still suppress the new turn if the rig is being replaced this frame.
-                    }
-                    if (Time.unscaledTime - s_yawLoggedAt > 20f)
-                    {
-                        s_yawLoggedAt = Time.unscaledTime;
-                        Plugin.ModLog.LogInfo("Ride: a camera target turn was requested while Space was held; left out.");
-                    }
-                    return false;
-                }
-            }
-            catch (Exception)
-            {
-            }
-            return true;
+            try { ShakeController.Instance?.PrepareRideCamera(__instance); }
+            catch (Exception ex) { ShakeController.Instance?.ReportCameraFailure(ex); }
         }
 
         internal static void Install()
         {
-            try
+            var harmony = new Harmony(Plugin.PluginGuid + ".camera");
+            foreach (Type type in new[] { typeof(ViewMotor), typeof(OrbitFixedMotor) })
             {
-                var harmony = new Harmony(Plugin.PluginGuid + ".camera");
-                int focus = 0;
-                var type = typeof(Assets.TValle.Inputs.Runtime.Cameras.Camera3DViewInputs);
-                foreach (var m in type.GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly))
+                foreach (string name in new[] { "RigLateUpdate", "PostRigLateUpdate" })
                 {
-                    if (m.Name == "Focus")
+                    try
                     {
-                        harmony.Patch(m, prefix: new HarmonyMethod(typeof(CameraGuard), nameof(SkipFocus)));
-                        focus++;
+                        var method = AccessTools.DeclaredMethod(type, name);
+                        if (method == null) throw new MissingMethodException(type.FullName, name);
+                        harmony.Patch(method, prefix: new HarmonyMethod(typeof(CameraGuard), nameof(Prepare)));
+                        Plugin.ModLog.LogInfo($"Native camera: watching {type.Name}.{name} for actor rotation.");
                     }
-                    else if (m.Name == "FocusAction")
+                    catch (Exception ex)
                     {
-                        harmony.Patch(m, prefix: new HarmonyMethod(typeof(CameraGuard), nameof(SkipFocusKey)));
-                        focus++;
+                        Plugin.ModLog.LogWarning($"Native camera: cannot watch {type.Name}.{name}: {ex.Message}");
                     }
                 }
-                Plugin.ModLog.LogInfo($"Ride: the free camera's focus is watched ({focus} overloads/actions): it is left out during the ride.");
-                var skip = new HarmonyMethod(typeof(CameraGuard), nameof(Skip));
-                int done = 0;
-                foreach (string name in new[] { nameof(GameCamera.Ver), nameof(GameCamera.ForzarVista) })
-                {
-                    var method = AccessTools.Method(typeof(GameCamera), name);
-                    if (method != null)
-                    {
-                        harmony.Patch(method, prefix: skip);
-                        done++;
-                    }
-                }
-                Plugin.ModLog.LogInfo($"Ride: the game's camera look-at is watched ({done} of 2 methods): it is left out while the hero lies.");
-                var yaw = AccessTools.Method(typeof(CameraRig), nameof(CameraRig.SetTargetYawPitch));
-                if (yaw != null)
-                {
-                    harmony.Patch(yaw, prefix: new HarmonyMethod(typeof(CameraGuard), nameof(SkipSpaceTurn)));
-                    Plugin.ModLog.LogInfo("Ride: the camera rig's target turn is watched while Space is held.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Plugin.ModLog.LogWarning("Ride: the game's camera look-at could not be watched: " + ex.Message);
             }
         }
     }
 
     public sealed partial class ShakeController
     {
-        // He is lying under her (or being laid down, or getting up).
-        internal bool HeroLying => m_ride && m_heroReady;
+        private sealed class CameraMotorState
+        {
+            internal CameraMotor motor;
+            internal ViewMotor view;
+            internal OrbitFixedMotor orbit;
+            internal bool rotateAnchor, rotateWithAnchor, matchActor;
+            internal string rotateAlias;
+        }
+
+        private readonly List<CameraMotorState> m_cameraMotors = new List<CameraMotorState>();
+        private CameraController m_nativeCameraRig;
+        private bool m_cameraFailureLogged;
+
+        internal void ReportCameraFailure(Exception ex)
+        {
+            if (m_cameraFailureLogged) return;
+            m_cameraFailureLogged = true;
+            Plugin.ModLog.LogWarning("Native camera: actor rotation could not be detached: " + ex.Message);
+        }
+
+        internal void PrepareRideCamera(CameraMotor motor)
+        {
+            if (!m_ride || !m_heroReady || m_hero == null || motor == null) return;
+            var rig = motor.RigController;
+            if (rig == null) return;
+            if (m_nativeCameraRig == null)
+            {
+                var attached = m_hero.cameraAtada;
+                if (attached == null) return;
+                GameCamera gameCamera = attached.GetComponent<GameCamera>();
+                if (gameCamera == null) gameCamera = attached.GetComponentInChildren<GameCamera>();
+                if (gameCamera == null) gameCamera = attached.GetComponentInParent<GameCamera>();
+                if (gameCamera == null)
+                {
+                    // CamaraAtable may live on the actor rather than on the separate camera object.
+                    var candidate = rig.GetComponent<GameCamera>();
+                    if (candidate == null) candidate = rig.GetComponentInParent<GameCamera>();
+                    if (candidate == null) candidate = rig.GetComponentInChildren<GameCamera>();
+                    var anchor = candidate != null ? candidate.m_currentAnchor : null;
+                    if (anchor != null && (anchor == attached.transform || anchor.IsChildOf(attached.transform)
+                        || anchor == m_hero.transform || anchor.IsChildOf(m_hero.transform)
+                        || (m_heroRoot != null && (anchor == m_heroRoot || anchor.IsChildOf(m_heroRoot)))))
+                        gameCamera = candidate;
+                }
+                m_nativeCameraRig = gameCamera != null ? gameCamera.m_CameraController : null;
+                if (m_nativeCameraRig == null) return;
+            }
+            if (rig.Pointer != m_nativeCameraRig.Pointer) return;
+
+            CameraMotorState state = null;
+            foreach (var saved in m_cameraMotors)
+                if (saved.motor.Pointer == motor.Pointer) { state = saved; break; }
+            if (state == null)
+            {
+                var view = motor.TryCast<ViewMotor>();
+                var orbit = motor.TryCast<OrbitFixedMotor>();
+                if (view == null && orbit == null) return;
+                state = new CameraMotorState { motor = motor, view = view, orbit = orbit };
+                if (view != null)
+                {
+                    state.rotateAnchor = view.RotateAnchor;
+                    state.rotateAlias = view.RotateAnchorAlias;
+                    state.matchActor = view.IsActorMatchingRotation;
+                }
+                else
+                {
+                    state.rotateAnchor = orbit.RotateAnchor;
+                    state.rotateAlias = orbit.RotateAnchorAlias;
+                    state.rotateWithAnchor = orbit.RotateWithAnchor;
+                }
+                m_cameraMotors.Add(state);
+                motor.TryCast<YawPitchMotor>()?.ClearTargetYawPitch();
+                Plugin.ModLog.LogInfo($"Native camera: detached actor rotation on {(view != null ? "ViewMotor" : "OrbitFixedMotor")}, alias '{state.rotateAlias}'.");
+            }
+            // The input alias is another path to rotation, even with RotateAnchor disabled.
+            if (state.view != null)
+            {
+                state.view.RotateAnchor = false;
+                state.view.RotateAnchorAlias = "";
+                state.view.IsActorMatchingRotation = false;
+                state.view.mWasRotatingAnchor = false;
+            }
+            else
+            {
+                state.orbit.RotateAnchor = false;
+                state.orbit.RotateAnchorAlias = "";
+                state.orbit.RotateWithAnchor = false;
+            }
+            var yawPitch = motor.TryCast<YawPitchMotor>();
+            if (yawPitch != null) yawPitch.mWasAnchorRotating = false;
+        }
+
+        private void RestoreRideCamera()
+        {
+            foreach (var state in m_cameraMotors)
+            {
+                try
+                {
+                    if (state.view != null)
+                    {
+                        state.view.RotateAnchor = state.rotateAnchor;
+                        state.view.RotateAnchorAlias = state.rotateAlias;
+                        state.view.IsActorMatchingRotation = state.matchActor;
+                    }
+                    else
+                    {
+                        state.orbit.RotateAnchor = state.rotateAnchor;
+                        state.orbit.RotateAnchorAlias = state.rotateAlias;
+                        state.orbit.RotateWithAnchor = state.rotateWithAnchor;
+                    }
+                }
+                catch (Exception ex) { ReportCameraFailure(ex); }
+            }
+            m_cameraMotors.Clear();
+            m_nativeCameraRig = null;
+            m_cameraFailureLogged = false;
+        }
     }
 }
