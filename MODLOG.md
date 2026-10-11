@@ -8,6 +8,13 @@ the two must not run together. The old plugin is disabled in the game folder as 
 
 Build: `dotnet build CMAScenes.csproj -c Release -p:SkipInstall=true`, copy `bin\Release\CMAScenes.dll` when the game is closed.
 
+## 0.3.28 (2026-10-11) - Space camera guard
+
+- Inspected the installed 0.66 interop metadata: Camera3DViewInputs has three Focus overloads, but the old Harmony guard patched only the parameterless overload. All three and FocusAction are now guarded.
+- Guarded CameraController.SetTargetYawPitch while Space is held during the ride; clear an existing target turn before suppressing the new one.
+- Retained camera protection while the hero is returning from the ride pose. Release build succeeds; the Space interaction still needs observation in a running scene.
+- The installed previous DLL is backed up under `%LOCALAPPDATA%\CMAScenes\backups\camera-space-0.3.28\CMAScenes.dll` before installation.
+
 ## 0.3.27 (2026-10-11) - live pose control and fuller pose flow
 
 - `KeypadMultiply` cycles poses during riding or twerking; Shift reverses direction. The shortcut is configurable in the settings window.

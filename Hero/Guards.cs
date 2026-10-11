@@ -2,6 +2,7 @@ using System;
 using HarmonyLib;
 using UnityEngine;
 using GameCamera = Assets._ReusableScripts.CuchiCuchi.Dependentes.Ootii.Camaras.MainCharCamera;
+using CameraRig = com.ootii.Cameras.CameraController;
 
 namespace CMAScenes
 {
@@ -17,7 +18,7 @@ namespace CMAScenes
             try
             {
                 ShakeController me = ShakeController.Instance;
-                if (me != null && me.HeroLying)
+                if (me != null && (me.Riding || me.HeroLying))
                 {
                     if (Time.unscaledTime - s_loggedAt > 20f)
                     {
@@ -41,7 +42,7 @@ namespace CMAScenes
             try
             {
                 ShakeController me = ShakeController.Instance;
-                if (me != null && me.Riding)
+                if (me != null && (me.Riding || me.HeroLying))
                 {
                     if (Time.unscaledTime - s_focusLoggedAt > 20f)
                     {
@@ -68,6 +69,38 @@ namespace CMAScenes
         }
 
         private static float s_focusLoggedAt = -100f;
+        private static float s_yawLoggedAt = -100f;
+
+        // The game's camera rig can also be given a target yaw/pitch directly. While Space is held
+        // during a ride, do not queue an automatic turn around the hero's now-horizontal upright.
+        private static bool SkipSpaceTurn(CameraRig __instance)
+        {
+            try
+            {
+                ShakeController me = ShakeController.Instance;
+                if (me != null && (me.Riding || me.HeroLying) && Input.GetKey(KeyCode.Space))
+                {
+                    try
+                    {
+                        __instance.ClearTargetYawPitch();
+                    }
+                    catch (Exception)
+                    {
+                        // Still suppress the new turn if the rig is being replaced this frame.
+                    }
+                    if (Time.unscaledTime - s_yawLoggedAt > 20f)
+                    {
+                        s_yawLoggedAt = Time.unscaledTime;
+                        Plugin.ModLog.LogInfo("Ride: a camera target turn was requested while Space was held; left out.");
+                    }
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return true;
+        }
 
         internal static void Install()
         {
@@ -78,7 +111,7 @@ namespace CMAScenes
                 var type = typeof(Assets.TValle.Inputs.Runtime.Cameras.Camera3DViewInputs);
                 foreach (var m in type.GetMethods(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.DeclaredOnly))
                 {
-                    if (m.Name == "Focus" && m.GetParameters().Length == 0)
+                    if (m.Name == "Focus")
                     {
                         harmony.Patch(m, prefix: new HarmonyMethod(typeof(CameraGuard), nameof(SkipFocus)));
                         focus++;
@@ -89,7 +122,7 @@ namespace CMAScenes
                         focus++;
                     }
                 }
-                Plugin.ModLog.LogInfo($"Ride: the free camera's focus is watched ({focus} of 2 methods): it is left out during the ride.");
+                Plugin.ModLog.LogInfo($"Ride: the free camera's focus is watched ({focus} overloads/actions): it is left out during the ride.");
                 var skip = new HarmonyMethod(typeof(CameraGuard), nameof(Skip));
                 int done = 0;
                 foreach (string name in new[] { nameof(GameCamera.Ver), nameof(GameCamera.ForzarVista) })
@@ -102,6 +135,12 @@ namespace CMAScenes
                     }
                 }
                 Plugin.ModLog.LogInfo($"Ride: the game's camera look-at is watched ({done} of 2 methods): it is left out while the hero lies.");
+                var yaw = AccessTools.Method(typeof(CameraRig), nameof(CameraRig.SetTargetYawPitch));
+                if (yaw != null)
+                {
+                    harmony.Patch(yaw, prefix: new HarmonyMethod(typeof(CameraGuard), nameof(SkipSpaceTurn)));
+                    Plugin.ModLog.LogInfo("Ride: the camera rig's target turn is watched while Space is held.");
+                }
             }
             catch (Exception ex)
             {
