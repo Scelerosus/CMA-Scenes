@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>CMAScenes</AssemblyName>
     <RootNamespace>CMAScenes</RootNamespace>
-    <Version>0.3.29</Version>
+    <Version>0.3.30</Version>
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

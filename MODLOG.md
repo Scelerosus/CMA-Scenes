@@ -8,6 +8,13 @@ the two must not run together. The old plugin is disabled in the game folder as 
 
 Build: `dotnet build CMAScenes.csproj -c Release -p:SkipInstall=true`, copy `bin\Release\CMAScenes.dll` when the game is closed.
 
+## 0.3.30 (2026-10-11) - preserve view on Space
+
+- User confirms Space is better in 0.3.29 but still turns the view/head left. Runtime log confirms the hero's ViewMotor was found and actor rotation detached. The remaining auto-look path is a hypothesis, not yet confirmed by an observed call.
+- Suppress Space-driven automatic target commands on the hero's rig, its yaw/pitch motor and MainCharCamera look requests while lying. Other cameras and normal mouse input keep their native processing.
+- Clear pending target turns while Space is held; on key-down discard smoothing toward an old target, retaining the current camera direction. Added event logs for diagnosis if the sideways movement persists.
+- Release build succeeds. Running game still has 0.3.29 until restart; install 0.3.30 after it exits, preserving the previous DLL under `%LOCALAPPDATA%\CMAScenes\backups\space-view-0.3.30`. In-game effect remains unverified.
+
 ## 0.3.29 (2026-10-11) - native camera and raised head
 
 - User reports that the 0.3.28 Space guards did not stop spinning. Replaced those suppression patches with prefixes on ViewMotor and OrbitFixedMotor RigLateUpdate/PostRigLateUpdate. Native updates still execute.

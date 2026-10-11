@@ -16,6 +16,30 @@ namespace CMAScenes
             catch (Exception ex) { ShakeController.Instance?.ReportCameraFailure(ex); }
         }
 
+        private static bool AllowMotorTarget(YawPitchMotor __instance)
+        {
+            try
+            {
+                var me = ShakeController.Instance;
+                if (me == null || !Input.GetKey(KeyCode.Space)) return true;
+                me.PrepareRideCamera(__instance);
+                return !me.SuppressSpaceCameraTarget(__instance.RigController);
+            }
+            catch (Exception ex) { ShakeController.Instance?.ReportCameraFailure(ex); return true; }
+        }
+
+        private static bool AllowRigTarget(CameraController __instance)
+        {
+            try { return !(ShakeController.Instance?.SuppressSpaceCameraTarget(__instance) ?? false); }
+            catch (Exception ex) { ShakeController.Instance?.ReportCameraFailure(ex); return true; }
+        }
+
+        private static bool AllowLookTarget(GameCamera __instance)
+        {
+            try { return !(ShakeController.Instance?.SuppressSpaceCameraTarget(__instance.m_CameraController) ?? false); }
+            catch (Exception ex) { ShakeController.Instance?.ReportCameraFailure(ex); return true; }
+        }
+
         internal static void Install()
         {
             var harmony = new Harmony(Plugin.PluginGuid + ".camera");
@@ -36,6 +60,22 @@ namespace CMAScenes
                     }
                 }
             }
+            InstallTargetGuard(harmony, typeof(YawPitchMotor), "SetTargetYawPitch", nameof(AllowMotorTarget));
+            InstallTargetGuard(harmony, typeof(CameraController), "SetTargetYawPitch", nameof(AllowRigTarget));
+            InstallTargetGuard(harmony, typeof(GameCamera), "Ver", nameof(AllowLookTarget));
+            InstallTargetGuard(harmony, typeof(GameCamera), "ForzarVista", nameof(AllowLookTarget));
+        }
+
+        private static void InstallTargetGuard(Harmony harmony, Type type, string name, string prefix)
+        {
+            try
+            {
+                var method = AccessTools.DeclaredMethod(type, name);
+                if (method == null) throw new MissingMethodException(type.FullName, name);
+                harmony.Patch(method, prefix: new HarmonyMethod(typeof(CameraGuard), prefix));
+                Plugin.ModLog.LogInfo($"Native camera: watching Space target on {type.Name}.{name}.");
+            }
+            catch (Exception ex) { Plugin.ModLog.LogWarning($"Native camera: cannot watch {type.Name}.{name}: {ex.Message}"); }
         }
     }
 
@@ -48,11 +88,27 @@ namespace CMAScenes
             internal OrbitFixedMotor orbit;
             internal bool rotateAnchor, rotateWithAnchor, matchActor;
             internal string rotateAlias;
+            internal int spaceFrame = -1;
         }
 
         private readonly List<CameraMotorState> m_cameraMotors = new List<CameraMotorState>();
         private CameraController m_nativeCameraRig;
         private bool m_cameraFailureLogged;
+        private float m_spaceTargetLogAt = -100f;
+
+        internal bool SuppressSpaceCameraTarget(CameraController rig)
+        {
+            if (!Input.GetKey(KeyCode.Space) || !m_ride || !m_heroReady || rig == null) return false;
+            if (m_nativeCameraRig == null) PrepareRideCamera(rig.ActiveMotor);
+            if (m_nativeCameraRig == null || rig.Pointer != m_nativeCameraRig.Pointer) return false;
+            rig.ClearTargetYawPitch();
+            if (Time.unscaledTime - m_spaceTargetLogAt > 5f)
+            {
+                m_spaceTargetLogAt = Time.unscaledTime;
+                Plugin.ModLog.LogInfo("Native camera: ignored Space auto-look target while lying; mouse look remains native.");
+            }
+            return true;
+        }
 
         internal void ReportCameraFailure(Exception ex)
         {
@@ -130,7 +186,21 @@ namespace CMAScenes
                 state.orbit.RotateWithAnchor = false;
             }
             var yawPitch = motor.TryCast<YawPitchMotor>();
-            if (yawPitch != null) yawPitch.mWasAnchorRotating = false;
+            if (yawPitch != null)
+            {
+                yawPitch.mWasAnchorRotating = false;
+                // Clear queued automatic turns, including direct native requests which bypass the patched setters.
+                // Reset smoothing once on key-down, keeping the current direction rather than reinterpreting it
+                // around the actor's upright (which is horizontal in this pose).
+                if (Input.GetKey(KeyCode.Space)) yawPitch.ClearTargetYawPitch();
+                if (Input.GetKeyDown(KeyCode.Space) && state.spaceFrame != Time.frameCount)
+                {
+                    state.spaceFrame = Time.frameCount;
+                    Plugin.ModLog.LogInfo($"Native camera: Space keeps current view {yawPitch.Euler.ToString("F1")}; queued view was {yawPitch.EulerTarget.ToString("F1")}.");
+                    yawPitch._EulerTarget = yawPitch.Euler;
+                    yawPitch.mViewVelocityX = yawPitch.mViewVelocityY = 0f;
+                }
+            }
         }
 
         private void RestoreRideCamera()
@@ -157,6 +227,7 @@ namespace CMAScenes
             m_cameraMotors.Clear();
             m_nativeCameraRig = null;
             m_cameraFailureLogged = false;
+            m_spaceTargetLogAt = -100f;
         }
     }
 }
