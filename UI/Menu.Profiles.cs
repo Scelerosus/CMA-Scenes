@@ -44,8 +44,8 @@ namespace CMAScenes
             CardEnd();
 
             CardBegin(st, T("Save the current settings", "Сохранить текущие настройки"));
-            GUILayout.Label(T("A profile keeps everything about the twerk, the sex and the bikini under a name. Hotkeys are not part of it.",
-                "Профиль хранит под именем всё про тверк, секс и бикини. Клавиши в него не входят."), st.dim);
+            GUILayout.Label(T("A profile keeps everything about the scene and clothing under a name. Hotkeys are not part of it.",
+                "Профиль хранит под именем параметры сцены и одежды. Клавиши в него не входят."), st.dim);
             GUILayout.BeginHorizontal();
             GUI.SetNextControlName("profile");
             s_profileName = GUILayout.TextField(s_profileName, 40, st.field);
@@ -115,7 +115,7 @@ namespace CMAScenes
                         MarkDirty();
                     }
                     s_profileStatus = T("Loaded '", "Загружен «") + ProfileLabel(s_profileSelected) + T("'.", "».");
-                    host.ReapplyBikini();
+                    // Loading a profile updates the draft; dressing remains an explicit Outfit action.
                     RefreshProfiles();
                 }
             }

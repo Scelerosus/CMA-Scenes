@@ -39,7 +39,7 @@ namespace CMAScenes
         {
             // (How long a move lasts, how smooth it is and how long a change of pose takes are the mod's own mechanics:
             // settings in the file of settings, no rows here.)
-            CardBegin(st, T("Rhythm (twerk and sex)", "Ритм (тверк и секс)"));
+            CardBegin(st, T("Rhythm (scene)", "Ритм (сцена)"));
             RhythmRow(st);
             CardEnd();
 
@@ -49,6 +49,8 @@ namespace CMAScenes
             CardEnd();
 
             CardBegin(st, T("Window", "Окно"));
+            Slider(st, T("Clothing search radius", "Радиус поиска персонажей"), Plugin.ClothingRadius, 1f, 50f, "0.0", T(" m", " м"), 1f,
+                T("Characters near the camera with a wardrobe, independent of posing support.", "Персонажи рядом с камерой с доступным гардеробом, независимо от поддержки позирования."));
             Slider(st, T("Window brightness", "Яркость окна"), Plugin.UiDim, 0.3f, 1f, "0", " %", 100f,
                 T("The game shows this window brighter than it is drawn, which washes its colours out. Lower it until the picked choices are a clear blue and their white text is easy to read. Applied when the slider is let go.",
                   "Игра показывает это окно ярче, чем оно нарисовано, и цвета выцветают. Убавляйте, пока выбранные плашки не станут насыщенно-синими, а белый текст на них — хорошо читаемым. Применяется, когда отпустите ползунок."));
@@ -76,15 +78,14 @@ namespace CMAScenes
                 "Нажмите на кнопку с клавишей, затем нужную клавишу. Esc — оставить как было, Backspace — без клавиши."), st.dim);
             Gap(4f);
             KeyRow(st, T("This window", "Это окно"), Plugin.MenuKey, T("Opens and closes this window.", "Открывает и закрывает это окно."));
-            KeyRow(st, T("Twerk", "Тверк"), Plugin.ToggleKey, T("Starts and stops the twerk.", "Запускает и останавливает тверк."));
             KeyRow(st, T("Sex", "Секс"), Plugin.RideKey, T("Starts and stops the sex: she gets on top of him, or off him.", "Начинает и заканчивает секс: она садится на него или слезает."));
             KeyRow(st, T("Bikini", "Бикини"), Plugin.BikiniKey, T("Puts the bikini on and takes it off.", "Надевает и снимает бикини."));
             KeyRow(st, T("Condom", "Презерватив"), Plugin.CondomKey, T("Gets a condom out, or takes off the one he wears.", "Достаёт презерватив или снимает надетый."));
-            KeyRow(st, "X-ray", Plugin.XRayKey, T("Switches the X-ray on and off: her insides and his penis in them, during the sex.", "Включает и выключает X-ray: её внутренние органы и член в них во время секса."));
+            KeyRow(st, "X-ray", Plugin.XRayKey, T("Switches the X-ray on and off: the woman nearest the centre of the screen outside sex, and the ridden woman during sex.", "Включает и выключает X-ray: женщину в центре экрана вне секса и женщину, на которой вы едете, во время секса."));
             KeyRow(st, T("Next mood", "Следующий настрой"), Plugin.PresetKey, T("Switches to the next mood: Sensual, Gentle, Wild, As set.", "Переключает настрой по кругу: Чувственно, Нежно, Страстно, Как настроено."));
-            KeyRow(st, T("Next pose", "Следующая поза"), Plugin.NextPoseKey, T("In sex or twerk: next pose; hold Shift for the previous one.", "Во время секса или тверка: следующая поза; с Shift — предыдущая."));
-            KeyRow(st, T("Faster", "Быстрее"), Plugin.FasterKey, T("A step faster: the sex (or the twerk, while she twerks). The tempo is saved, as with the slider.", "На шаг быстрее: секс (или тверк, пока она тверкает). Темп сохраняется, как ползунком."));
-            KeyRow(st, T("Slower", "Медленнее"), Plugin.SlowerKey, T("A step slower: the sex (or the twerk, while she twerks). The tempo is saved, as with the slider.", "На шаг медленнее: секс (или тверк, пока она тверкает). Темп сохраняется, как ползунком."));
+            KeyRow(st, T("Next pose", "Следующая поза"), Plugin.NextPoseKey, T("In the scene: next pose; hold Shift for the previous one.", "Во время сцены: следующая поза; с Shift — предыдущая."));
+            KeyRow(st, T("Faster", "Быстрее"), Plugin.FasterKey, T("A step faster: the sex. The tempo is saved, as with the slider.", "На шаг быстрее: секс. Темп сохраняется, как ползунком."));
+            KeyRow(st, T("Slower", "Медленнее"), Plugin.SlowerKey, T("A step slower: the sex. The tempo is saved, as with the slider.", "На шаг медленнее: секс. Темп сохраняется, как ползунком."));
             if (Plugin.MenuKey.Value == KeyCode.None)
             {
                 GUILayout.Label(T("This window has no key: once closed it can only be opened again by setting MenuKey in the config file.",
@@ -93,7 +94,7 @@ namespace CMAScenes
             CardEnd();
 
             CardBegin(st, T("On the screen", "На экране"));
-            Check(st, T("Show a line at the top of the screen during the twerk and sex", "Показывать строку вверху экрана во время тверка и секса"), Plugin.ShowNotice,
+            Check(st, T("Show a line at the top of the screen during the scene", "Показывать строку вверху экрана во время сцены"), Plugin.ShowNotice,
                 T("The line at the top of the screen that says what is running and which key stops it.", "Строка вверху экрана: что сейчас идёт и какой клавишей остановить."));
             if (Plugin.ShowNotice.Value)
             {
@@ -105,7 +106,7 @@ namespace CMAScenes
             ResetButton(st, T("Reset the keys and these settings", "Сбросить клавиши и эти настройки"), () =>
             {
                 s_capture = null;
-                ResetAll(Plugin.MenuKey, Plugin.ToggleKey, Plugin.RideKey, Plugin.BikiniKey, Plugin.CondomKey, Plugin.XRayKey, Plugin.PresetKey, Plugin.NextPoseKey, Plugin.FasterKey, Plugin.SlowerKey, Plugin.ShowNotice, Plugin.ShowStatus, Plugin.Language,
+                ResetAll(Plugin.MenuKey, Plugin.RideKey, Plugin.BikiniKey, Plugin.CondomKey, Plugin.XRayKey, Plugin.PresetKey, Plugin.NextPoseKey, Plugin.FasterKey, Plugin.SlowerKey, Plugin.ShowNotice, Plugin.ShowStatus, Plugin.Language,
                     Plugin.Rhythm, Plugin.MoveSeconds, Plugin.Smoothness, Plugin.PoseRamp);
             });
         }

@@ -7,7 +7,6 @@ using UnityEngine;
 namespace CMAScenes
 {
     // The settings window: pick the bikini top and bottom from the installed clothing, change its colour while she
-    // wears it, and tune the twerk and the ride. Everything it changes is the same setting as in the config file,
     // which is written when a slider is let go and when the window is closed.
     //
     // It is drawn with the game's immediate-mode GUI, so every look here (rounded panels, switches, sliders with a
@@ -22,8 +21,8 @@ namespace CMAScenes
         private const float RowWidth = Width - 2f * Pad - 28f - 14f;
 
         // The squares of the pages, in the colours of the apps on the game's phone (its "Agency Hub").
-        private static readonly Color[] TabColors = { Hex("#5BC0F8"), Hex("#F781C3"), Hex("#F26D63"), Hex("#F2D544"), Hex("#C99CF5"), Hex("#3EDDB6") };
-        private static readonly string[] TabSlugs = { "home", "twerk", "ride", "bikini", "profiles", "settings" };
+        private static readonly Color[] TabColors = { Hex("#5BC0F8"), Hex("#F26D63"), Hex("#F2D544"), Hex("#C99CF5"), Hex("#3EDDB6") };
+        private static readonly string[] TabSlugs = { "home", "ride", "bikini", "profiles", "settings" };
 
         private static bool s_open;
         private static bool s_typing;
@@ -44,12 +43,10 @@ namespace CMAScenes
         // True while a text box of the window has the keyboard, so typing in it does not trigger the hotkeys.
         internal static bool TypingText => s_open && (s_typing || s_capture != null);
 
-        // The hotkey that is waiting for its new key, the help line under the pointer, and which cards are folded open.
+        // The hotkey that is waiting for its new key and the help line under the pointer.
         private static ConfigEntry<KeyCode> s_capture;
         private static string s_tipShown = "";
         private static readonly Dictionary<string, GUIContent> s_tips = new Dictionary<string, GUIContent>();
-        private static readonly Dictionary<string, bool> s_folds = new Dictionary<string, bool>();
-        private static bool s_foldsLoaded;
 
         internal static bool IsOpen => s_open;
 
@@ -57,6 +54,8 @@ namespace CMAScenes
         {
             SetOpen(host, !s_open);
         }
+
+        internal static void Close(ShakeController host) => SetOpen(host, false);
 
         // Opening shows the mouse pointer and holds the game's own input; closing gives both back.
         private static void SetOpen(ShakeController host, bool open)
@@ -70,6 +69,7 @@ namespace CMAScenes
             s_drag = false;
             s_capture = null;
             s_resize = false;
+            host.SetMenuCursor(open);
             if (open)
             {
                 LoadLayout();
@@ -85,9 +85,9 @@ namespace CMAScenes
             }
             else
             {
+                ClothingPreviews.Release();
                 SaveIfDirty();
             }
-            host.SetMenuCursor(open);
         }
 
         // ---- helpers ----
@@ -223,7 +223,7 @@ namespace CMAScenes
             return Loc.T(en, ru);
         }
 
-        private const int TabHome = 0, TabTwerk = 1, TabRide = 2, TabBikini = 3, TabProfiles = 4, TabSettings = 5;
+        private const int TabHome = 0, TabRide = 1, TabBikini = 2, TabProfiles = 3, TabSettings = 4;
 
         private static readonly Color[] Dots = { Hex("#FF5F57"), Hex("#FEBC2E"), Hex("#28C840") };
 
@@ -232,9 +232,8 @@ namespace CMAScenes
         {
             switch (tab)
             {
-                case TabTwerk: return T("Tw", "Тв");
                 case TabRide: return T("R", "Р");
-                case TabBikini: return T("B", "Б");
+                case TabBikini: return "O";
                 case TabProfiles: return T("P", "П");
                 case TabSettings: return T("S", "Н");
                 default: return T("H", "Г");
@@ -364,7 +363,7 @@ namespace CMAScenes
 
             GUILayout.BeginHorizontal();
             GUILayout.Space(66f);
-            GUILayout.Label("the-net://cma-shake/" + (collapsed ? "bar" : s_tab == TabRide ? "sex" : TabSlugs[Mathf.Clamp(s_tab, 0, TabSlugs.Length - 1)]) + "   <color=#6B7280>v" + Plugin.PluginVersion + "</color>", st.addr, GUILayout.Height(30f), GUILayout.ExpandWidth(true));
+            GUILayout.Label("CMA Scenes · " + (collapsed ? "Menu" : s_tab == TabBikini ? "Outfit" : s_tab == TabRide ? T("Scene", "Сцена") : s_tab == TabProfiles ? T("Profiles", "Профили") : s_tab == TabSettings ? T("Settings", "Настройки") : T("Home", "Главная")) + "   <color=#6B7280>" + Plugin.PluginVersion + "</color>", st.addr, GUILayout.Height(30f), GUILayout.ExpandWidth(true));
             GUILayout.Space(10f);
             int lang = Loc.Ru ? 0 : 1;
             int langNext = Choice(st, new[] { "RU", "EN" }, lang, 46f, 0f);
@@ -401,7 +400,7 @@ namespace CMAScenes
             GUILayout.Space(12f);
 
             // The pages, as the bookmarks of the game's browser: a tile each, with a coloured square.
-            string[] tabs = { T("Home", "Главная"), T("Twerk", "Тверк"), T("Sex", "Секс"), T("Bikini", "Бикини"), T("Profiles", "Профили"), T("Settings", "Настройки") };
+            string[] tabs = { T("Home", "Главная"), T("Sex", "Секс"), "Outfit", T("Profiles", "Профили"), T("Settings", "Настройки") };
             GUILayout.BeginHorizontal();
             float tabWidth = (Width - 2f * Pad - 6f * (tabs.Length - 1)) / tabs.Length;
             for (int i = 0; i < tabs.Length; i++)
@@ -428,7 +427,6 @@ namespace CMAScenes
             s_scroll = GUILayout.BeginScrollView(s_scroll, GUILayout.ExpandHeight(true));
             switch (s_tab)
             {
-                case TabTwerk: DrawTwerk(host, st); break;
                 case TabRide: DrawRideContent(host, st); break;
                 case TabBikini: DrawBikini(host, st); break;
                 case TabProfiles: DrawProfiles(host, st); break;
@@ -449,7 +447,6 @@ namespace CMAScenes
             {
                 GUILayout.BeginHorizontal(GUILayout.Height(40f));
                 Hint(st, Plugin.MenuKey.Value, T("menu", "меню"));
-                Hint(st, Plugin.ToggleKey.Value, T("twerk", "тверк"));
                 Hint(st, Plugin.RideKey.Value, T("sex", "секс"));
                 Hint(st, Plugin.BikiniKey.Value, T("bikini", "бикини"));
                 Hint(st, Plugin.PresetKey.Value, T("mood", "настрой"));
@@ -520,7 +517,7 @@ namespace CMAScenes
             }
 
             string focus = GUI.GetNameOfFocusedControl();
-            s_typing = focus == "search" || focus == "hex" || focus == "profile";
+            s_typing = UiInput.IsTextControl(focus);
 
             if (ev != null && ev.rawType == EventType.MouseUp)
             {
@@ -531,24 +528,20 @@ namespace CMAScenes
         // The folded window: the three start buttons and nothing else.
         private static void DrawQuickBar(ShakeController host, Styles st)
         {
-            bool twerk = host.Twerking;
             bool ride = host.Riding;
             bool bikini = Bikini.AnyOn();
             GUILayout.Space(6f);
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(T("Twerk", "Тверк"), twerk ? st.bigOn : st.big, GUILayout.Height(40f)))
-            {
-                host.ToggleMode(false);
-            }
-            GUILayout.Space(8f);
             if (GUILayout.Button(T("Sex", "Секс"), ride ? st.bigOn : st.big, GUILayout.Height(40f)))
             {
                 host.ToggleMode(true);
             }
             GUILayout.Space(8f);
-            if (GUILayout.Button(T("Bikini", "Бикини"), bikini ? st.bigOn : st.big, GUILayout.Height(40f)))
+            if (GUILayout.Button("Outfit", bikini ? st.bigOn : st.big, GUILayout.Height(40f)))
             {
-                host.ToggleBikini();
+                s_tab = TabBikini;
+                Plugin.WindowCollapsed.Value = false;
+                MarkDirty();
             }
             GUILayout.Space(8f);
             if (GUILayout.Button(Loc.Preset(Plugin.PresetName.Value), st.big, GUILayout.Width(156f), GUILayout.Height(40f)))

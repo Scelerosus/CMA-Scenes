@@ -184,7 +184,7 @@ namespace CMAScenes
         }
 
         // How far he is lying down (0 standing at home, 1 lying under her). It has a will of its own, so that however the
-        // ride ends (the key, or a switch to the twerk) he is eased back home first and let go only when he is there.
+        // ride ends he is eased back home first and let go only when he is there.
         private float m_heroW;
 
         private int m_heroLowTries;
@@ -672,7 +672,7 @@ namespace CMAScenes
             }
             try
             {
-                // He lies down while the ride is on and gets up when it is off, or when it turns into the twerk, each at his own
+                // He lies down while the ride is on and gets up when it is off, each at his own
                 // pace. He is let go only once he is standing at home again, never in the middle of a step.
                 bool lieDown = m_ride && m_toggled && !m_switching;
                 if (!m_heroReady)

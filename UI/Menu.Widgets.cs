@@ -176,61 +176,6 @@ namespace CMAScenes
             GUILayout.EndVertical();
         }
 
-        // A card that folds: its heading is a button that opens and closes it. Returns whether what is in it is to be drawn.
-        // Always followed by CardEnd, open or not.
-        private static bool FoldBegin(Styles st, string key, string title, string closedNote, bool openAtFirst)
-        {
-            GUILayout.BeginVertical(st.card);
-            if (!s_foldsLoaded)
-            {
-                s_foldsLoaded = true;
-                foreach (string part in (Plugin.UiFolds.Value ?? "").Split(';'))
-                {
-                    int eq = part.IndexOf('=');
-                    if (eq > 0)
-                    {
-                        s_folds[part.Substring(0, eq)] = part.EndsWith("1", StringComparison.Ordinal);
-                    }
-                }
-            }
-            if (!s_folds.TryGetValue(key, out bool open))
-            {
-                open = openAtFirst;
-            }
-            bool openWas = open;
-            string text = (open ? "–   " : "+   ") + Spaced(title);
-            if (!open && !string.IsNullOrEmpty(closedNote))
-            {
-                string withNote = text + "     <size=12><color=#6B7280>" + closedNote + "</color></size>";
-                // (The note only where it fits beside the heading.)
-                s_measure.text = withNote;
-                if (st.fold.CalcSize(s_measure).x <= RowWidth)
-                {
-                    text = withNote;
-                }
-            }
-            if (GUILayout.Button(text, st.fold, GUILayout.Height(26f)))
-            {
-                open = !open;
-            }
-            s_folds[key] = open;
-            if (open != openWas)
-            {
-                var kept = new System.Text.StringBuilder();
-                foreach (KeyValuePair<string, bool> f in s_folds)
-                {
-                    kept.Append(kept.Length > 0 ? ";" : "").Append(f.Key).Append('=').Append(f.Value ? '1' : '0');
-                }
-                Plugin.UiFolds.Value = kept.ToString();
-                MarkDirty();
-            }
-            if (open)
-            {
-                GUILayout.Space(6f);
-            }
-            return open;
-        }
-
         private static bool Repainting()
         {
             Event e = Event.current;

@@ -14,33 +14,26 @@ namespace CMAScenes
         // page of its mode.
         private static void DrawHome(ShakeController host, Styles st)
         {
-            bool twerk = host.Twerking;
             bool ride = host.Riding;
             bool bikini = Bikini.AnyOn();
 
             GUILayout.Label("Scenes Hub", st.brand, GUILayout.Height(36f));
-            GUILayout.Label(ride ? T("Sex", "Секс") + ":  " + host.RideStatusText() : twerk ? T("She is twerking", "Она тверкает") : T("Stand in front of her and press Sex or Twerk", "Встаньте перед девушкой и нажмите «Секс» или «Тверк»"), ride || twerk ? st.good : st.dim);
+            GUILayout.Label(ride ? T("Sex", "Секс") + ":  " + host.RideStatusText() : T("Choose a page to begin", "Выберите раздел"), ride ? st.good : st.dim);
             Gap(10f);
 
             CardBegin(st, null);
             GUILayout.BeginHorizontal();
-            if (BigButton(st, T("Twerk", "Тверк"), twerk ? T("stop", "остановить") : T("start", "запустить"), Plugin.ToggleKey.Value, twerk, TabTwerk))
-            {
-                host.ToggleMode(false);
-            }
-            Tip(T("She bends over and twerks where she stands.", "Она наклоняется и тверкает там, где стоит."));
-            GUILayout.Space(8f);
             if (BigButton(st, T("Sex", "Секс"), ride ? T("stop", "закончить") : T("start", "начать"), Plugin.RideKey.Value, ride, TabRide))
             {
                 host.ToggleMode(true);
             }
             Tip(T("He lies down on his back and she gets on top of him. The woman nearest to your view is the one.", "Он ложится на спину, и она садится на него сверху. Берётся ближайшая к камере девушка."));
             GUILayout.Space(8f);
-            if (BigButton(st, T("Bikini", "Бикини"), bikini ? T("take off", "снять") : T("put on", "надеть"), Plugin.BikiniKey.Value, bikini, TabBikini))
+            if (BigButton(st, "Outfit", T("open wardrobe", "открыть гардероб"), KeyCode.None, bikini, TabBikini))
             {
-                host.ToggleBikini();
+                s_tab = TabBikini;
             }
-            Tip(T("Puts her in the bikini picked on the Bikini page, or back in her own clothes.", "Надевает бикини, выбранное на странице «Бикини», или возвращает её одежду."));
+            Tip(T("Opens the clothing catalog for the selected character.", "Открывает каталог одежды для выбранного персонажа."));
             GUILayout.EndHorizontal();
             CardEnd();
 
@@ -68,13 +61,7 @@ namespace CMAScenes
                 CardEnd();
             }
 
-            CardBegin(st, T("Twerk", "Тверк"));
-            PoseRow(st, T("Pose", "Поза"), Poses.Twerk, Plugin.TwerkPoseType);
-            Slider(st, T("Tempo", "Темп"), Plugin.Frequency, 0.1f, 5f, "0.00", PerSec, 1f,
-                T("How many times a second she bounces her hips.", "Сколько раз в секунду она подбрасывает бёдра."));
-            CardEnd();
-
-            CardBegin(st, T("Mood (twerk and sex)", "Настрой (тверк и секс)"));
+            CardBegin(st, T("Mood", "Настрой"));
             PresetRow(st);
             CardEnd();
         }

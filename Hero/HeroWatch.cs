@@ -86,7 +86,7 @@ namespace CMAScenes
                     PenisSee();
                     CondomStep(Time.unscaledDeltaTime);
                 }
-                // With nothing running (no twerk, no ride) the frame's own work stops early and the wet look is not
+                // With no scene running the frame's own work stops early and the wet look is not
                 // kept up: the latex of a condom put on outside the ride was never drawn on his skin, only its teat
                 // showed. It is kept up from here then.
                 if (m_wetFrame != Time.frameCount && m_wetParts.Count > 0)

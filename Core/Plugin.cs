@@ -11,9 +11,8 @@ using UnityEngine;
 
 namespace CMAScenes
 {
-    // CMA Scenes: what CMA Shake was (the twerk, the sex with her on top, his wetness, the condom, the X-ray), carried on
-    // under a new name, with the sex no longer tied to the spot of the floor she stands on: it can be put on the bench,
-    // on a table, anywhere the player looks (Sex/Places.cs), and her arms are posed by what an arm can do (Sex/Wrist.cs).
+    // Successor to CMA Shake: ride scenes, configurable locations and poses, clothing, fluids, condom and X-ray.
+    // The scene can move to furniture or wherever the player looks (Sex/Places.cs); arm poses respect the rig (Sex/Wrist.cs).
     //
     // It is the same code grown further, so the two must not run together: both would pose the same woman. CMA Shake's
     // settings and profiles are taken over the first time this one runs.
@@ -24,7 +23,7 @@ namespace CMAScenes
     {
         public const string PluginGuid = "community.cma.scenes";
         public const string PluginName = "CMA Scenes";
-        public const string PluginVersion = "0.3.30";
+        public const string PluginVersion = "0.4.1";
 
         internal static ManualLogSource ModLog;
         internal static ConfigFile Cfg;
@@ -42,7 +41,7 @@ namespace CMAScenes
             BindSettings();
 
             AddComponent<ShakeController>();
-            Log.LogInfo($"{PluginName} {PluginVersion} loaded: press {RideKey.Value} for sex, {ToggleKey.Value} to twerk, {MenuKey.Value} for the settings window.");
+            Log.LogInfo($"{PluginName} {PluginVersion} loaded: press {RideKey.Value} for the scene, {MenuKey.Value} for the settings window.");
         }
 
         // The first time: CMA Shake's settings and its profiles become this mod's (copied; CMA Shake's own are left).

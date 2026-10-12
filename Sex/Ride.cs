@@ -8,7 +8,7 @@ namespace CMAScenes
 {
     // The ride: you are the first-person camera, so the camera drops low in front of her and she folds into a wide
     // squat over where you would be, leaning toward you with her hands reaching for your chest, and moves with the
-    // same choreography as the twerk, at a slower pace. The hero, the male character the camera is attached to, is
+    // a steady rhythm. The hero, the male character the camera is attached to, is
     // carried with it: he lies on his back under her while it lasts and goes back to where he stood when it ends.
     public sealed partial class ShakeController
     {
@@ -874,7 +874,7 @@ namespace CMAScenes
 
             // The soft bones add their own bounce, shaken by how the hips really moved.
             // The ride's hip acceleration rises with the square of its tempo. Keep the glute bones' spring motion subtle
-            // and bounded here, so faster strokes cannot pull the buttock shape inward; the twerk keeps its fuller wobble.
+            // and bounded here, so faster strokes cannot pull the buttock shape inward.
             Wobble(w, stroke, shakeW, 0.3f, 0.02f);
         }
     }

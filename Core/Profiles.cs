@@ -16,14 +16,6 @@ namespace CMAScenes
             public string[] values;
         }
 
-        // The twerk: how she stands and bends. Each one is a different way of doing it.
-        internal static readonly Pose[] Twerk =
-        {
-            new Pose { name = "Bent over", values = new[] { "Pose|LeanDegrees=58", "Pose|Arch=16", "Pose|SquatDepth=0.2", "Pose|HipBack=0.12", "Pose|Stance=0.22", "Pose|ToesOut=20", "Pose|HandsOn=Knees" } },
-            new Pose { name = "Deep squat", values = new[] { "Pose|LeanDegrees=28", "Pose|Arch=8", "Pose|SquatDepth=0.42", "Pose|HipBack=0.06", "Pose|Stance=0.32", "Pose|ToesOut=30", "Pose|HandsOn=Knees" } },
-            new Pose { name = "Hands on hips", values = new[] { "Pose|LeanDegrees=22", "Pose|Arch=12", "Pose|SquatDepth=0.26", "Pose|HipBack=0.08", "Pose|Stance=0.2", "Pose|ToesOut=15", "Pose|HandsOn=Hips" } },
-            new Pose { name = "Low arch", values = new[] { "Pose|LeanDegrees=76", "Pose|Arch=24", "Pose|SquatDepth=0.08", "Pose|HipBack=0.16", "Pose|Stance=0.2", "Pose|ToesOut=12", "Pose|HandsOn=Knees" } }
-        };
 
         // The ride: each named position also fixes whether she kneels or squats. Her hands follow the position and her balance.
         internal static readonly Pose[] Ride =

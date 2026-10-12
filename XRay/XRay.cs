@@ -49,6 +49,41 @@ namespace CMAScenes
 
         internal bool XRayOn => Plugin.XRay.Value;
 
+        // Outside this mod's sex mode, the model nearest the centre of the view is the X-ray subject.
+        private Woman XRaySubject()
+        {
+            if (m_ride && m_rideWoman != null && m_rideWoman.character != null)
+            {
+                return m_rideWoman;
+            }
+            Camera view = Camera.main;
+            Woman best = null;
+            float bestDistance = float.MaxValue;
+            foreach (Woman candidate in m_women)
+            {
+                if (candidate == null || candidate.character == null || candidate.hip == null)
+                {
+                    continue;
+                }
+                if (view == null)
+                {
+                    return candidate;
+                }
+                Vector3 point = view.WorldToViewportPoint(candidate.hip.position);
+                if (point.z <= 0f || point.x < 0f || point.x > 1f || point.y < 0f || point.y > 1f)
+                {
+                    continue;
+                }
+                float distance = (new Vector2(point.x, point.y) - new Vector2(0.5f, 0.5f)).sqrMagnitude;
+                if (distance < bestDistance)
+                {
+                    best = candidate;
+                    bestDistance = distance;
+                }
+            }
+            return best;
+        }
+
         // The key, or the switch in the window.
         internal void ToggleXRay()
         {
@@ -60,9 +95,8 @@ namespace CMAScenes
             catch (Exception)
             {
             }
-            bool sex = m_ride && m_toggled && !m_switching;
             Notice(Plugin.XRay.Value
-                ? (sex ? Loc.T("X-ray: on.", "X-ray: включён.") : Loc.T("X-ray: on (shown during the sex).", "X-ray: включён (виден во время секса)."))
+                ? Loc.T("X-ray: on.", "X-ray: включён.")
                 : Loc.T("X-ray: off.", "X-ray: выключен."));
         }
 
@@ -105,9 +139,9 @@ namespace CMAScenes
                 seen++;
                 GameHole hole = hi.m_hole;
                 bool hers = hole != null && ((mine != null && hole.Pointer == mine.Pointer) || (other != null && hole.Pointer == other.Pointer));
-                if (!hers && mine == null)
+                if (!hers)
                 {
-                    // (The sex has not found her holes: hers are the ones under her.)
+                    // Outside sex there is no hole pointer to compare; identify the target's own internals by hierarchy.
                     hers = hi.transform.IsChildOf(w.character.transform) || (w.hip != null && hi.transform.root == w.hip.root);
                 }
                 if (!hers)
@@ -149,8 +183,9 @@ namespace CMAScenes
             {
                 float dt = Mathf.Clamp(Time.unscaledDeltaTime, 0.004f, 0.05f);
                 float now = Time.unscaledTime;
-                Woman w = m_rideWoman;
-                bool sex = Plugin.XRay.Value && m_ride && m_toggled && !m_switching && m_heroReady && w != null && w.character != null && m_poseW > 0.5f && m_penisValid;
+                bool sex = Plugin.XRay.Value && m_ride && m_toggled && !m_switching && m_heroReady && m_rideWoman != null && m_rideWoman.character != null && m_poseW > 0.5f && m_penisValid;
+                Woman w = sex ? m_rideWoman : (Plugin.XRay.Value && !m_toggled ? XRaySubject() : null);
+                bool manual = Plugin.XRay.Value && !sex && !m_toggled && w != null;
                 if (sex)
                 {
                     m_xSexUntil = now + Mathf.Clamp(Plugin.XRayAfter.Value, 0f, 600f);
@@ -159,12 +194,12 @@ namespace CMAScenes
                 }
                 else if (!Plugin.XRay.Value || m_toggled)
                 {
-                    // (Switched off, or another sex or a twerk begun: nothing is kept for after.)
+                    // (Switched off, or another scene started: nothing is kept for after.)
                     m_xSexUntil = 0f;
                 }
                 // After the sex, on her: for as long as the game still has his semen in her (it lets it out of her now
                 // that nothing is in her), up to a while. The game's X-ray stays out of it.
-                bool after = !sex && Plugin.XRay.Value && !m_toggled && w != null && w == m_xSexWoman && w == m_xWoman && w.character != null
+                bool after = !sex && !manual && Plugin.XRay.Value && !m_toggled && w != null && w == m_xSexWoman && w == m_xWoman && w.character != null
                     && now < m_xSexUntil && SemenStillInHer && !XRayGameWanted;
                 if (after && !m_xAfterTold)
                 {
@@ -172,7 +207,7 @@ namespace CMAScenes
                     Plugin.ModLog.LogInfo($"X-ray: the sex is over; it stays on her while the game still has his semen in her (vagina {m_xMlV:F1} ml, anus {m_xMlA:F1} ml), for {Mathf.Max(0f, m_xSexUntil - now):F0} s at most.");
                 }
                 m_xAfter = after;
-                bool on = sex || after;
+                bool on = sex || manual || after;
                 m_xW = Mathf.MoveTowards(m_xW, on ? 1f : 0f, dt / 0.35f);
                 // (His semen in her by the plugin's own count, where the game keeps none: it stays while he is in her,
                 // and is gone a while after he is out.)

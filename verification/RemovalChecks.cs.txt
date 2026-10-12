@@ -1,0 +1,384 @@
+using CMAScenes;
+using Assets._ReusableScripts.CuchiCuchi.Ropa;
+using UnityEngine;
+using Assets;
+using Assets._ReusableScripts.CuchiCuchi;
+using Assets.TValle.Tools.Runtime.Moddding.Clothing.Maps;
+
+void Check(bool value, string name) { if (!value) throw new Exception(name); Console.WriteLine("PASS: " + name); }
+var manager = new IRopaManager();
+var main = new SkinnedMeshRenderer(); var sub = new SkinnedMeshRenderer();
+manager.piezasPuestasPorId["dress"] = new PiezaDeRopaBase { skinnedMeshRenderer = main,
+    m_subSkins = new() { new Skin { skinnedMeshRenderer = sub }, new Skin { skinnedMeshRenderer = main } } };
+Check(WardrobeRemoval.Remove(manager, "dress", null), "native removal succeeds");
+Check(!main.enabled && !sub.enabled && main.DestroyCount == 1 && sub.DestroyCount == 1, "detached primary/subskin renderers removed once");
+Check(WardrobeRemoval.Remove(manager, "dress", null), "already removed clothing completes cleanup without native work");
+var shared = new SkinnedMeshRenderer();
+manager.piezasPuestasPorId["a"] = new PiezaDeRopaBase { skinnedMeshRenderer = shared };
+manager.piezasPuestasPorId["b"] = new PiezaDeRopaBase { m_subSkins = new() { new Skin { skinnedMeshRenderer = shared } } };
+WardrobeRemoval.Remove(manager, "a", null);
+Check(shared.enabled && shared.DestroyCount == 0, "renderer still owned by another garment preserved");
+manager.Succeed = false;
+Check(!WardrobeRemoval.Remove(manager, "b", null) && shared.enabled && shared.DestroyCount == 0, "failed removal preserves renderer");
+manager.Succeed = true; manager.Retain = true;
+WardrobeRemoval.Remove(manager, "b", null);
+Check(shared.enabled && shared.DestroyCount == 0, "native retained registration preserves renderer");
+manager.Retain = false;
+Check(!WardrobeRemoval.SynchronizeRemoved(manager, "b", true, null), "visible clothing remains tracked");
+manager.Hidden.Add("b"); manager.Succeed = false;
+Check(!WardrobeRemoval.SynchronizeRemoved(manager, "b", true, null), "failed hidden-piece cleanup retains tracking for retry");
+manager.Succeed = true;
+Check(WardrobeRemoval.SynchronizeRemoved(manager, "b", true, null) && !manager.piezasPuestasPorId.ContainsKey("b"), "native hidden clothing is unregistered and synchronized");
+Check(WardrobeRemoval.SynchronizeRemoved(manager, "b", true, null), "already removed clothing synchronizes without another native removal");
+var color = new Color();
+var slot = ClothingMaterials.Create("silk", 2, color);
+Check(slot.materialIDString == "silk" && slot.materialSlot == 2, "selected material uses its actual renderer slot");
+Check(slot.field_Public_Boolean_0, "material requests an instance required by native loader");
+bool invalid = false;
+try { ClothingMaterials.Create("silk", -1, color); } catch (ArgumentException) { invalid = true; }
+Check(invalid, "invalid renderer slot rejected before native load");
+var originalSlot = ClothingMaterials.Create("cotton", 3, new Color { Value = 17 });
+originalSlot.field_Public_Boolean_0 = false;
+var originalPiece = new PiezaDeRopaBase { materialesData = new() { originalSlot, null } };
+var snapshot = ClothingMaterials.Snapshot(originalPiece);
+originalSlot.SetMaterialID("silk"); originalSlot.color = new Color { Value = 20 };
+Check(snapshot.Count == 1 && snapshot[0].materialIDString == "cotton" && snapshot[0].color.Value == 17,
+    "original garment material snapshot is independent of subsequent native edits");
+Check(snapshot[0].materialSlot == 3 && snapshot[0].field_Public_Boolean_0 && !originalSlot.field_Public_Boolean_0,
+    "restoration preserves actual slot and requests safe native instance without mutating source");
+Check(ClothingMaterials.Snapshot(null).Count == 0 && ClothingMaterials.Snapshot(new PiezaDeRopaBase()).Count == 0,
+    "empty native material data snapshots safely");
+var owned = new HashSet<string> { "missing", "late", "retained" };
+var loading = new HashSet<string> { "late" };
+manager.piezasPuestasPorId["retained"] = new PiezaDeRopaBase { skinnedMeshRenderer = new() };
+manager.Retain = true;
+Check(!WardrobeRemoval.Cleanup(manager, owned, loading, null) && owned.SetEquals(new[] { "late", "retained" }),
+    "cancellation clears absent items but retains in-flight and failed removals");
+manager.Retain = false;
+Check(!WardrobeRemoval.Cleanup(manager, owned, loading, null) && owned.SetEquals(new[] { "late" }),
+    "retry completes native cleanup without forgetting unfinished load");
+manager.piezasPuestasPorId["late"] = new PiezaDeRopaBase { skinnedMeshRenderer = new() };
+loading.Clear();
+Check(WardrobeRemoval.Cleanup(manager, owned, loading, null) && !manager.piezasPuestasPorId.ContainsKey("late"),
+    "late native load after cancellation is removed before wardrobe restoration");
+Console.WriteLine("19 removal/material checks passed; native game lifecycle is not emulated.");
+
+var shirtMap = new ClothingItemMap { id = "shirt", name = "shirt", fullName = "shirt", displayId = "shirt", type = ClothingItemMap.Type.upperBody };
+var jacketMap = new ClothingItemMap { id = "jacket", name = "jacket", fullName = "jacket", displayId = "jacket", type = ClothingItemMap.Type.jacket };
+Resources.ClothingMaps = new[] { shirtMap, jacketMap };
+var originalColor = new Color { Value = 9 };
+var nativeShirt = new PiezaDeRopaBase { name = "native shirt", materialesData = new() { ClothingMaterials.Create("cotton", 0, originalColor) } };
+var wardrobe = new IRopaManager(); wardrobe.piezasPuestasPorId["shirt"] = nativeShirt;
+var woman = new Character { name = "test", Admin = new RopaAdminDeCharacter { manager = wardrobe } };
+WardrobeCharacters.Selected = woman;
+var host = new ShakeController();
+var choice = new ClothingChoice(new[] { "shirt" }, "#FF0000", true);
+Time.unscaledTime = 100;
+Bikini.SetFor(host, woman, true, choice);
+Check(!wardrobe.Usando("shirt", false) && Bikini.LoadingSelected(), "already-worn selected garment is snapshotted and queued for style reload");
+Bikini.Step(); wardrobe.CompleteNext();
+Check(Bikini.IsOn(woman) && wardrobe.Usando("shirt", true), "selected original garment finishes native reload");
+var tinted = wardrobe.piezasPuestasPorId["shirt"];
+Check(tinted.materialesData[0].color.Value == 255 && tinted.sharedMaterials[0].Texture == null,
+    "colour metadata and solid fabric are applied to already-worn selection");
+Check(tinted.sharedMaterials[0].ClearedTextures.SetEquals(new[] { "_BaseColorMap", "_BaseMap", "_MainTex" }),
+    "solid garment uses the same base-colour texture channels as its preview");
+var ownedTint = tinted.sharedMaterials[0];
+Bikini.SetFor(host, woman, false);
+Bikini.Step(); wardrobe.CompleteNext();
+Check(wardrobe.piezasPuestasPorId["shirt"].materialesData[0].materialIDString == "cotton"
+    && wardrobe.piezasPuestasPorId["shirt"].materialesData[0].color.Value == 9,
+    "restore returns original material and colour after selected original style changes");
+Check(ownedTint.DestroyCount == 1, "only plugin-owned tint material is released on removal");
+Bikini.Step();
+
+Time.unscaledTime = 200;
+Bikini.SetFor(host, woman, true, new ClothingChoice(new[] { "jacket" }, "#FF0000", false));
+Bikini.Step();
+Check(wardrobe.Pending.Count == 1 && Bikini.LoadingSelected(), "native outfit addition is in flight");
+Bikini.SetFor(host, woman, false);
+wardrobe.CompleteNext();
+Check(!wardrobe.Usando("jacket", false), "late callback after cancellation cannot leave clothing worn");
+Bikini.Step(); wardrobe.CompleteNext();
+Check(wardrobe.Usando("shirt", true) && !Bikini.IsOn(woman), "cancelled outfit restores original after late callback cleanup");
+Bikini.Step();
+
+Time.unscaledTime = 300;
+wardrobe.FailNext = true;
+Bikini.SetFor(host, woman, true, new ClothingChoice(new[] { "jacket" }, "#FF0000", false));
+Bikini.Step(); wardrobe.CompleteNext();
+Check(!Bikini.IsOn(woman) && Bikini.SelectedError() != null, "failed native addition stops worn state and exposes an error");
+Bikini.Step(); wardrobe.CompleteNext();
+Check(wardrobe.Usando("shirt", true) && !wardrobe.Usando("jacket", false) && Bikini.SelectedError() != null,
+    "failed outfit application rolls back to original clothing and retains failure reason for user");
+Bikini.Step();
+
+Time.unscaledTime = 400;
+Bikini.SetFor(host, woman, true, new ClothingChoice(new[] { "jacket" }, "#FF0000", false));
+Bikini.Step(); wardrobe.CompleteNext();
+var hiddenTint = wardrobe.piezasPuestasPorId["jacket"].sharedMaterials[0];
+wardrobe.Hidden.Add("jacket");
+Bikini.Step();
+Check(!wardrobe.Usando("jacket", false) && !Bikini.IsOn(woman), "native game undress unregisters hidden mod garment and clears worn state");
+Check(Bikini.CanRestoreSelected() && hiddenTint.DestroyCount == 1, "manual undress retains original restoration and releases owned material");
+Bikini.SetFor(host, woman, false); Bikini.Step(); wardrobe.CompleteNext(); Bikini.Step();
+Check(wardrobe.Usando("shirt", true), "original outfit remains restorable after manual game undress");
+
+Time.unscaledTime = 500;
+Bikini.SetFor(host, woman, true, new ClothingChoice(new[] { "jacket" }, "#FF0000", false));
+Bikini.Step(); wardrobe.CompleteNext();
+var retryTint = wardrobe.piezasPuestasPorId["jacket"].sharedMaterials[0];
+wardrobe.Succeed = false;
+Bikini.SetFor(host, woman, false);
+Check(Bikini.LoadingSelected() && Bikini.CanRestoreSelected() && retryTint.DestroyCount == 0,
+    "failed native removal retains cleanup ownership and live tint material");
+wardrobe.Succeed = true; Time.unscaledTime += 1; Bikini.Step(); wardrobe.CompleteNext(); Bikini.Step();
+Check(wardrobe.Usando("shirt", true) && !wardrobe.Usando("jacket", false) && retryTint.DestroyCount == 1,
+    "cleanup retry finishes before original clothing restoration");
+shirtMap.materialsPerIndex = new()
+{
+    new() { materialIndex = 0, materials = new() { new() { id = "silk" } } },
+    new() { materialIndex = 3, materials = new() { new() { id = "silk" }, new() { id = "cotton" } } }
+};
+wardrobe.piezasPuestasPorId["shirt"].materialesData = new() { ClothingMaterials.Create("silk", 3, originalColor) };
+var readVariants = Bikini.ReadWorn(out var readIds);
+Check(readIds.Contains("shirt") && readVariants["shirt"].Count == 1 && readVariants["shirt"][3] == "silk",
+    "live material selection uses renderer slot even when an ID occurs in multiple groups");
+Time.unscaledTime = 600;
+Bikini.SetFor(host, woman, true, new ClothingChoice(new[] { "shirt" }, "#FF0000", false,
+    new() { ["shirt"] = new() { [3] = "cotton" } }));
+Bikini.Step(); wardrobe.CompleteNext();
+Check(wardrobe.piezasPuestasPorId["shirt"].materialesData[0].materialSlot == 3
+    && wardrobe.piezasPuestasPorId["shirt"].materialesData[0].materialIDString == "cotton",
+    "staged material choice applies to an already-worn garment's actual renderer slot");
+Bikini.SetFor(host, woman, false); Bikini.Step(); wardrobe.CompleteNext(); Bikini.Step();
+Check(wardrobe.piezasPuestasPorId["shirt"].materialesData[0].materialIDString == "silk",
+    "restoration returns the original material after applying another staged material");
+var fullWardrobe = new IRopaManager();
+fullWardrobe.piezasPuestasPorId["nativeDress"] = new PiezaDeRopaBase { name = "nativeDress", materialesData = new() };
+fullWardrobe.Catalog.Data["nativeDress"] = new() { cubreFlag = RopaCubre.pectorales | RopaCubre.nalgas };
+fullWardrobe.Catalog.Data["jacket"] = new() { cubreFlag = RopaCubre.pectorales | RopaCubre.nalgas };
+var fullWoman = new Character { name = "full body test", Admin = new RopaAdminDeCharacter { manager = fullWardrobe } };
+WardrobeCharacters.Selected = fullWoman;
+jacketMap.type = ClothingItemMap.Type.upperBody;
+Bikini.SetFor(host, fullWoman, true, new ClothingChoice(new[] { "jacket" }, "#FF0000", false));
+Check(!fullWardrobe.Usando("nativeDress", false), "native full-body coverage replaces original dress despite upperBody mod category");
+Bikini.Step(); fullWardrobe.CompleteNext(); Bikini.SetFor(host, fullWoman, false); Bikini.Step(); fullWardrobe.CompleteNext(); Bikini.Step();
+Check(fullWardrobe.Usando("nativeDress", true), "native full-body original remains restorable after coverage-based replacement");
+Time.unscaledTime = 700;
+Bikini.SetFor(host, fullWoman, true, new ClothingChoice(new[] { "jacket" }, "#FF0000", false));
+Bikini.Step(); fullWardrobe.CompleteNext();
+var detachedAfterNativeRemoval = fullWardrobe.piezasPuestasPorId["jacket"].skinnedMeshRenderer;
+fullWardrobe.RemovePieza("jacket", true, null);
+Bikini.Step();
+Check(!detachedAfterNativeRemoval.enabled && detachedAfterNativeRemoval.DestroyCount == 1 && Bikini.CanRestoreSelected(),
+    "cached authoritative renderer is cleaned after game unregisters its garment before mod scan");
+var reusedAfterNativeRemoval = new SkinnedMeshRenderer();
+manager.piezasPuestasPorId["remaining"] = new PiezaDeRopaBase { skinnedMeshRenderer = reusedAfterNativeRemoval };
+WardrobeRemoval.SynchronizeRemoved(manager, "gone", true, null, new() { reusedAfterNativeRemoval, reusedAfterNativeRemoval });
+Check(reusedAfterNativeRemoval.enabled && reusedAfterNativeRemoval.DestroyCount == 0,
+    "cached orphan cleanup preserves renderer reassigned to another equipped garment");
+var colourWardrobe = new IRopaManager();
+var colourWoman = new Character { name = "two colours", Admin = new RopaAdminDeCharacter { manager = colourWardrobe } };
+WardrobeCharacters.Selected = colourWoman;
+Time.unscaledTime = 800;
+var colourChoice = new ClothingChoice(new[] { "shirt", "jacket" }, "#FFFFFF", false)
+    .WithPieceColor("shirt", "#FF0000").WithPieceColor("jacket", "#0000FF");
+Bikini.SetFor(host, colourWoman, true, colourChoice);
+Bikini.Step(); colourWardrobe.CompleteNext(); Bikini.Step(); colourWardrobe.CompleteNext(); Bikini.Step();
+Check(colourWardrobe.piezasPuestasPorId["shirt"].materialesData[0].color.Value == 255
+    && colourWardrobe.piezasPuestasPorId["shirt"].sharedMaterials[0].Color.Value == 255,
+    "first garment receives its own red native slots and tint");
+Check(colourWardrobe.piezasPuestasPorId["jacket"].materialesData[0].color.Value == 16711680
+    && colourWardrobe.piezasPuestasPorId["jacket"].sharedMaterials[0].Color.Value == 16711680,
+    "second garment receives independent blue colour across its delayed callback");
+Bikini.SetFor(host, colourWoman, false, restoreOriginal: false);
+Bikini.SetFor(host, colourWoman, true, colourChoice.WithPieceColor("jacket", "#00FF00"));
+Bikini.Step(); colourWardrobe.CompleteNext(); Bikini.Step(); colourWardrobe.CompleteNext(); Bikini.Step();
+Check(colourWardrobe.piezasPuestasPorId["shirt"].sharedMaterials[0].Color.Value == 255
+    && colourWardrobe.piezasPuestasPorId["jacket"].sharedMaterials[0].Color.Value == 65280,
+    "reapplying one changed garment colour leaves the other garment red");
+Bikini.SetFor(host, colourWoman, false); Bikini.Step();
+Console.WriteLine("45 wardrobe/removal/material checks passed; native game lifecycle is modeled with stubs.");
+
+namespace UnityEngine
+{
+    public struct Color { public int Value; public Color(float r, float g, float b, float a) { Value = (int)(r * 255); } }
+    public static class ColorUtility
+    {
+        public static bool TryParseHtmlString(string s, out Color color)
+        {
+            color = new Color();
+            if (s == null || s.Length != 7 || s[0] != '#' || !int.TryParse(s.Substring(1), System.Globalization.NumberStyles.HexNumber, null, out var rgb)) return false;
+            color.Value = ((rgb >> 16) & 255) | (rgb & 65280) | ((rgb & 255) << 16);
+            return true;
+        }
+    }
+    public static class Time { public static float unscaledTime; }
+    public static class Random { public static int Range(int from, int to) => from; }
+    public static class Resources
+    {
+        public static ClothingItemMap[] ClothingMaps = Array.Empty<ClothingItemMap>();
+        public static T[] FindObjectsOfTypeAll<T>() => typeof(T) == typeof(ClothingItemMap) ? (T[])(object)ClothingMaps : Array.Empty<T>();
+    }
+    public class Object
+    {
+        public int DestroyCount;
+        public static void Destroy(Object value) => value.DestroyCount++;
+    }
+    public class ScriptableObject : Object { public static T CreateInstance<T>() where T : new() => new T(); }
+    public class Renderer : Object
+    {
+        public string name;
+        public Material[] sharedMaterials = new[] { new Material() };
+    }
+    public class Material : Object
+    {
+        public object Texture = new();
+        public HashSet<string> ClearedTextures = new();
+        public Color Color;
+        public Material() { }
+        public Material(Material original) { Texture = original.Texture; Color = original.Color; }
+        public bool HasProperty(string property) => true;
+        public void SetColor(string property, Color value) => Color = value;
+        public void SetTexture(string property, object value) { Texture = value; if (value == null) ClearedTextures.Add(property); }
+    }
+    public class SkinnedMeshRenderer : Renderer
+    {
+        private static int next;
+        private readonly int id = ++next;
+        public bool enabled = true;
+        public int GetInstanceID() => id;
+    }
+    public class GameObject { public bool activeInHierarchy = true; public Scene scene = new(); }
+    public class Scene { public bool IsValid() => true; }
+}
+namespace Il2CppSystem { public delegate void Action<T>(T value); }
+namespace Il2CppInterop.Runtime
+{
+    public static class DelegateSupport
+    { public static T ConvertDelegate<T>(Delegate value) => (T)(object)Delegate.CreateDelegate(typeof(T), value.Target, value.Method); }
+}
+namespace Il2CppSystem.Collections.Generic
+{
+    public interface ICollection<T> : System.Collections.Generic.ICollection<T> { }
+    public interface IReadOnlyCollection<T> : System.Collections.Generic.IReadOnlyCollection<T> { TCast Cast<TCast>() => (TCast)(object)this; }
+    public interface IReadOnlyList<T> : IReadOnlyCollection<T>, System.Collections.Generic.IReadOnlyList<T> { }
+    public class List<T> : System.Collections.Generic.List<T>, ICollection<T>, IReadOnlyList<T>
+    {
+        public TCast Cast<TCast>() => (TCast)(object)this;
+    }
+}
+namespace Assets._ReusableScripts.CuchiCuchi.Ropa
+{
+    public class SlotDeMaterialDeRopa
+    {
+        public string materialIDString;
+        public int materialSlot;
+        public bool field_Public_Boolean_0;
+        public UnityEngine.Color color;
+        public void SetMaterialID(string id) => materialIDString = id;
+        public SlotDeMaterialDeRopa Clone() => (SlotDeMaterialDeRopa)MemberwiseClone();
+    }
+    public class Skin { public SkinnedMeshRenderer skinnedMeshRenderer; }
+    public class PiezaDeRopaBase : Renderer
+    {
+        public SkinnedMeshRenderer skinnedMeshRenderer;
+        public System.Collections.Generic.List<Skin> m_subSkins;
+        public Il2CppSystem.Collections.Generic.List<SlotDeMaterialDeRopa> materialesData;
+        public Renderer[] GetComponentsInChildren<Renderer>(bool inactive) => new[] { (Renderer)(object)this };
+        public void ChangeMainColor(int slot, Color color) { foreach (var m in materialesData) if (m.materialSlot == slot) m.color = color; }
+    }
+    public class IRopaManager
+    {
+        public Dictionary<string, PiezaDeRopaBase> piezasPuestasPorId = new();
+        public bool Succeed = true, Retain, FailNext, isLoadingConjunto;
+        public Queue<System.Action> Pending = new();
+        public IRopaParaAvatar Catalog = new();
+        public HashSet<string> Hidden = new();
+        public bool Usando(string id, bool ignoreHidden) => piezasPuestasPorId.ContainsKey(id) && (!ignoreHidden || !Hidden.Contains(id));
+        public bool RemovePieza(string id, bool destroy, UnityEngine.Object by)
+        {
+            if (!Succeed) return false;
+            if (!Retain) { piezasPuestasPorId.Remove(id); Hidden.Remove(id); }
+            return true;
+        }
+        public void ObtenerPiezasIDs(Il2CppSystem.Collections.Generic.ICollection<string> ids, bool hidden)
+        { foreach (string id in piezasPuestasPorId.Keys) ids.Add(id); }
+        public RopaCubre PiezaCubreFlags(string id, bool hidden) => Catalog.ObtenerData(id)?.cubreFlag ?? RopaCubre.pectorales;
+        public IRopaParaAvatar ObtenerMapa() => Catalog;
+        public System.Collections.IEnumerator AddPiezaAsync<T>(string id, Il2CppSystem.Collections.Generic.IReadOnlyList<SlotDeMaterialDeRopa> materials,
+            Il2CppSystem.Action<T> done, bool hidden)
+        {
+            Pending.Enqueue(() =>
+            {
+                if (FailNext) { FailNext = false; done(default); return; }
+                var slots = new Il2CppSystem.Collections.Generic.List<SlotDeMaterialDeRopa>();
+                foreach (var slot in materials) slots.Add(slot.Clone());
+                if (slots.Count == 0) slots.Add(ClothingMaterials.Create("default", 0, new Color()));
+                var piece = new PiezaDeRopaBase { name = id, materialesData = slots, skinnedMeshRenderer = new() };
+                piezasPuestasPorId[id] = piece;
+                done((T)(object)piece);
+            });
+            yield break;
+        }
+        public void CompleteNext() { if (Pending.Count != 0) Pending.Dequeue()(); }
+    }
+    [Flags] public enum RopaCubre { None = 0, pectorales = 1, pezones = 2, torzo = 4, espalda = 8,
+        labiosVaginales = 16, vaginaHole = 32, nalgas = 64, ano = 128, vientreBajo = 256 }
+    public class MapaDeRopa
+    {
+        public List<RopaData> piezas;
+        public enum RopaPreSetId { glasesCatEye, glasesSquare, glasesRound }
+        public class RopaData { public Sexo paraSexo; public string stringId; public RopaPreSetId enumID; public RopaCubre cubreFlag; }
+    }
+    public class IRopaParaAvatar
+    {
+        public Dictionary<string, MapaDeRopa.RopaData> Data = new();
+        public MapaDeRopa.RopaData ObtenerData(string id) => Data.TryGetValue(id, out var data) ? data : null;
+    }
+}
+namespace Assets { public enum Sexo { femenino, masculino } }
+namespace Assets._ReusableScripts.CuchiCuchi.Chars.Ropa.Memorias { }
+namespace Assets._ReusableScripts.CuchiCuchi
+{
+    public class Character
+    {
+        private static int next;
+        public IntPtr Pointer = new(++next);
+        public string name;
+        public Sexo sexo;
+        public GameObject gameObject = new();
+        public RopaAdminDeCharacter Admin;
+        public T GetComponentInChildren<T>(bool inactive) => (T)(object)Admin;
+    }
+    public class RopaAdminDeCharacter { public IRopaManager manager; }
+}
+namespace Assets.TValle.Tools.Runtime.Moddding.Clothing.Maps
+{
+    public class ClothingItemMap : ScriptableObject
+    {
+        public string name, id, fullName, displayId;
+        public string m_id { set => id = value; } public string m_displayId { set => displayId = value; }
+        public Type type; public Sex sex;
+        public List<Group> materialsPerIndex;
+        public enum Type { None, upperBodyUnderwear, upperBody, jacket, lowerBodyUnderwear, lowerBody, swimsuit, glasses }
+        public enum Sex { female, male }
+        public class Group { public int materialIndex; public List<MaterialMap> materials; }
+        public class MaterialMap { public string id; }
+    }
+}
+namespace CMAScenes
+{
+    public class ShakeController : UnityEngine.Object { public void StartCoroutine(System.Collections.IEnumerator routine) { while (routine.MoveNext()) { } } }
+    internal static class WardrobeCharacters { internal static Character Selected; }
+    internal static class Plugin
+    {
+        internal static Config<string> BikiniItems = new("");
+        internal static Config<string> BikiniTop = new("shirt"), BikiniBottom = new(""), BikiniColor = new("#FF0000"), BikiniMaterials = new("{}"), BikiniColors = new("{}");
+        internal static Config<bool> BikiniSolid = new(false);
+        internal static Log ModLog = new();
+        internal class Config<T> { internal T Value; internal Config(T value) { Value = value; } }
+        internal class Log { internal void LogInfo(string s) { } internal void LogWarning(string s) { } }
+    }
+}

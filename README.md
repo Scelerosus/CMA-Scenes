@@ -1,18 +1,55 @@
-# CMA Scenes
+# CMA Scenes 0.4.1
 
-A BepInEx (IL2CPP) plugin for *Corrupted Modeling Agency* 0.66 (adult game, 18+). It is the successor of CMA Shake:
-a choice of places for the sex (furniture found in the room), natural arms, a plugin-made condom and an X-ray view.
+A BepInEx 6 IL2CPP plugin for Corrupted Modeling Agency 0.66. Includes scene placement, character posing, wardrobe editing and the existing X-ray and cosmetic effects. Disable CMA Shake before using this successor.
 
-**Status: 0.3.30, experimental.** See `MODLOG.md` for the change history and known limitations.
+## Outfit
 
-## Build
-Needs the game with BepInEx 6 (IL2CPP) installed and run once (so that `BepInEx\interop` exists).
+Open the menu with **J**, then select **Outfit**. This page is always in English.
 
-    dotnet build CMAScenes.csproj -c Release -p:GameDir="C:\path\to\Corrupted Modeling Agency 0.66"
+1. Select a nearby character in **Character**.
+2. **Browse**: search the native clothing catalog and click a piece to add it and open its colour/material editor. Clicking a piece already in the draft opens its editor without removing it. Glasses have their own category.
+3. **Outfit**: click a garment to expand its own colour palette, colour code and custom RGB controls. Each piece retains its own colour in the draft, previews and saved outfits. Material choices belong to the selected piece; Pattern or Solid remains an outfit-wide style under More outfit options. Editing the draft does not alter worn clothes.
+4. **Dress character** applies the draft. **Restore previous outfit** cancels pending additions and restores the original pieces and their material settings.
+5. **Saved** stores named outfit drafts. Loading a saved draft does not dress the character until you press Dress character.
 
-The DLL is copied to `BepInEx\plugins\CMAScenes` (add `-p:SkipInstall=true` to only build).
+**Currently worn** reads the native wardrobe. Removing mod clothing from the game's menu updates the mod's live state without putting it back on. The draft remains available for reuse. Replacement uses native coverage flags, so a full dress replaces the appropriate original clothing while unrelated accessories remain equipped.
 
-## Use
-`L` starts the sex, `H` twerk, `J` opens the settings window. `KeypadMultiply` cycles poses while either mode is running; hold Shift to go backward. It is incompatible with CMA Shake (disable that plugin).
+Native garment loads are serialized. If a load fails, pending additions are canceled and the original outfit is restored. Failed removal and restoration keep their tracking for retry. A native load that never calls back displays a restart requirement after 60 seconds; retrying concurrently would corrupt the game's wardrobe loader.
 
-No game files are included in this repository.
+Similar Leopard Dress entries can represent different meshes with different openings. They remain separate and have descriptive labels. Material variations are chosen inside the outfit editor rather than treated as separate garments.
+
+Nearby wardrobe discovery is independent of scene posing. The camera search radius defaults to 8 metres and is configurable in Settings. Character selection is session-only.
+
+## Controls
+
+- **J**: CMA Scenes menu, with a visible cursor and native input blocking.
+- **K**: toggle the selected outfit.
+- **L**: start or stop the scene.
+- **Keypad Multiply**: next pose; hold Shift for the previous pose.
+- **/**: separate CMA Clothing Fix menu when that plugin is installed. Clipping coverage updates automatically.
+
+Other pages retain their language selector and configured keys. The old `Bikini/WithTwerk` storage key is preserved for compatibility and controls automatic outfit application during a scene; twerk controls and implementation have been removed.
+
+## Storage and previews
+
+Favorites and saved drafts live in `BepInEx/config/CMAScenes-clothing.json`. Schema 3 stores item IDs, material choices, individual garment colours and outfit style; schemas 1 and 2 remain readable and retain their original shared colour until pieces receive individual colours. Damaged or future-schema files are protected from writes until an explicit reset. Deleting a saved outfit or resetting preferences requires confirmation in the menu. The installation keeps a preferences backup for rollback to older plugin versions that cannot read schema 3.
+
+Cards show metadata credits and asynchronous garment-only 384 × 384 previews. No live characters or prefab scripts are instantiated. PNGs are cached in `%LOCALAPPDATA%/CMAScenes/clothing-previews`; at most 96 textures remain in memory, released when the menu closes. Unsupported LOD or procedural garments use the category icon. Preview colours use an isolated unlit renderer and may differ from scene lighting; translucent fabric is approximated with alpha cutout.
+
+## Build and verification
+
+Requires the installed game and BepInEx interop libraries generated by running the game once. The plugin targets .NET 6; catalog checks use .NET 10.
+
+```powershell
+dotnet build CMAScenes.csproj -c Release -p:SkipInstall=true
+dotnet run --project verification/CatalogChecks.csproj -c Release
+dotnet run --project verification/RemovalChecks/RemovalChecks.csproj -c Release
+python verification/outfit_ui_checks.py
+powershell -NoProfile -File verification/CheckInterop.ps1
+```
+
+Without `SkipInstall=true`, the build copies the DLL to `BepInEx/plugins/CMAScenes`. Close the game and back up the previous DLL before replacing it. Use `-p:GameDir="C:\path\to\game"` for another installation.
+
+The wardrobe fixtures exercise actual state-machine code with native stubs; UI guards check the source, and the API audit checks compiled calls against installed Unity interop for stripped methods. These do not replace an in-game check of native callbacks, menu layout, previews and interaction with Clothing Fix. Version 0.4.1 has not yet been visually verified in the game.
+
+No game files are distributed. Change history: [MODLOG.md](MODLOG.md).

@@ -227,7 +227,7 @@ namespace CMAScenes
             // The tempo glides to the one the step wants, and so does the speed that is set: neither changes at once.
             m_tempoNow = Mathf.Lerp(m_tempoNow, m_tempoGoal, 1f - Mathf.Exp(-dt / 1.8f));
             float tempo = m_tempoNow;
-            float rate = m_ride ? Plugin.RideFrequency.Value : Plugin.Frequency.Value;
+            float rate = Plugin.RideFrequency.Value;
             // (While she leads, how fast she goes is hers: the strokes a second that make the speed of him in her that
             // she likes, Lead.cs. The rhythm's moves, her body and the quiet after a climax still have their say on it.)
             bool led = m_ride && Leading;

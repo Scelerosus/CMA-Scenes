@@ -33,20 +33,31 @@ namespace CMAScenes
         {
         }
 
-        private bool m_reapplyPending;
-        private float m_reapplyAt;
+        private void OnDestroy()
+        {
+            m_clothingChanges.Clear();
+            Menu.Release(this);
+        }
+
+        private void OnDisable() => Menu.Close(this);
+
+        private readonly PendingClothing<Character> m_clothingChanges = new();
+        private Character m_modeClothingCharacter;
+
+        internal bool OutfitChanging => Bikini.LoadingSelected() || m_clothingChanges.Has(WardrobeCharacters.Selected);
+        internal bool CanRestoreOutfit => Bikini.CanRestoreSelected() || m_clothingChanges.Has(WardrobeCharacters.Selected);
 
         // The game hides and locks the mouse pointer while you play. Its own windows show it through this driver, which
         // also holds the game's input (camera look, movement), so the settings window uses the same one.
         private Assets.NewFeatures.Common.CursorInputDriver m_cursorDriver;
         private bool m_cursorForced;
-        private bool m_cursorWarned;
+        private bool m_cursorWarned, m_cursorDriverLive;
         private CursorLockMode m_prevLock;
         private bool m_prevVisible;
 
         internal void SetMenuCursor(bool shown)
         {
-            if (shown)
+            if (shown && !m_cursorForced)
             {
                 m_prevLock = Cursor.lockState;
                 m_prevVisible = Cursor.visible;
@@ -58,9 +69,11 @@ namespace CMAScenes
                     m_cursorDriver = new Assets.NewFeatures.Common.CursorInputDriver(this);
                 }
                 m_cursorDriver.SetCursorShown(shown);
+                m_cursorDriverLive = true;
             }
             catch (Exception ex)
             {
+                m_cursorDriverLive = false;
                 if (!m_cursorWarned)
                 {
                     m_cursorWarned = true;
@@ -75,8 +88,7 @@ namespace CMAScenes
             else if (m_cursorForced)
             {
                 m_cursorForced = false;
-                Cursor.lockState = m_prevLock;
-                Cursor.visible = m_prevVisible;
+                if (!m_cursorDriverLive) { Cursor.lockState = m_prevLock; Cursor.visible = m_prevVisible; }
             }
         }
 
@@ -95,13 +107,11 @@ namespace CMAScenes
         private bool m_switchRide;
         private bool HeadedForRide => m_switching ? m_switchRide : m_ride;
 
-        internal bool Twerking => m_toggled && !HeadedForRide;
         internal bool Riding => m_toggled && HeadedForRide;
 
-        // Starts or stops the twerk, or the ride, the same way their keys do.
         internal void ToggleMode(bool ride)
         {
-            SetActive(ride ? !Riding : !Twerking, ride);
+            if (ride) SetActive(!Riding, true);
         }
 
         // What begins a mode: the bounce starts a moment after the pose, the rhythm starts over, and the ride finds its woman.
@@ -115,44 +125,67 @@ namespace CMAScenes
             }
         }
 
-        // Puts the bikini on or takes it off, the same way its key does.
+        // Puts the selected outfit on or takes it off, the same way its key does.
         internal void ToggleBikini()
         {
-            bool on = !Bikini.AnyOn();
-            if (on && string.IsNullOrWhiteSpace(Plugin.BikiniTop.Value) && string.IsNullOrWhiteSpace(Plugin.BikiniBottom.Value))
+            if (Bikini.LoadingStalled())
             {
-                Notice(Loc.T("Pick a top or a bottom first.", "Сначала выберите верх или низ бикини."));
+                Notice(Loc.T("Clothing loading stalled; reload the game before retrying.", "Загрузка одежды остановилась; перезапустите игру перед повторной попыткой."));
                 return;
             }
-            m_reapplyPending = false;
+            if (WardrobeCharacters.Selected == null)
+            {
+                Notice(Loc.T("No nearby character with a wardrobe.", "Рядом нет персонажа с гардеробом."));
+                return;
+            }
+            bool on = !(Bikini.AnyOn() || m_clothingChanges.Has(WardrobeCharacters.Selected));
+            if (on && Bikini.CurrentChoice().Items.Count == 0)
+            {
+                Notice(Loc.T("Select at least one clothing item first.", "Сначала выберите хотя бы одну вещь."));
+                return;
+            }
+            m_clothingChanges.Cancel(WardrobeCharacters.Selected);
             // Put on or taken off by hand: it is hers now, the mode no longer takes it off.
-            m_bikiniByMode = false;
+            m_outfitByScene = false;
             Bikini.Set(this, on);
         }
 
-        // After another piece or colour mode is picked while she wears the bikini: take it off and put it on again.
-        internal void ReapplyBikini()
+        internal void RestoreOutfit()
         {
-            if (!Bikini.AnyOn() && !m_reapplyPending)
+            Character selected = WardrobeCharacters.Selected;
+            if (selected == null) return;
+            if (Bikini.LoadingStalled()) { Notice("Clothing loading stopped. Restart the game before retrying."); return; }
+            m_clothingChanges.Cancel(selected);
+            m_outfitByScene = false;
+            Bikini.SetFor(this, selected, false, restoreOriginal: true);
+        }
+
+        internal void ApplyOutfit()
+        {
+            Character selected = WardrobeCharacters.Selected;
+            if (selected == null) { Notice("Select a nearby character first."); return; }
+            if (Bikini.LoadingStalled()) { Notice("Clothing loading stopped. Restart the game before retrying."); return; }
+            if (Bikini.LoadingSelected() || m_clothingChanges.Has(selected)) { Notice("Finishing the current outfit change..."); return; }
+            ClothingChoice choice = Bikini.CurrentChoice();
+            if (choice.Items.Count == 0) { Notice("Choose at least one item for this outfit."); return; }
+            m_outfitByScene = false;
+            if (Bikini.IsOn(selected))
             {
-                return;
+                Bikini.SetFor(this, selected, false, restoreOriginal: false);
+                m_clothingChanges.Schedule(selected, Time.unscaledTime + .35f, choice);
             }
-            if (Bikini.AnyOn())
-            {
-                Bikini.Set(this, false);
-            }
-            m_reapplyPending = true;
-            m_reapplyAt = Time.unscaledTime + 0.5f;
+            else Bikini.SetFor(this, selected, true, choice);
         }
 
         private void Update()
         {
             try
             {
-                if (m_reapplyPending && Time.unscaledTime >= m_reapplyAt)
+                ClothingPreviews.Step();
+                Bikini.Step();
+                foreach (var change in m_clothingChanges.TakeReady(Time.unscaledTime))
                 {
-                    m_reapplyPending = false;
-                    Bikini.Set(this, true);
+                    if (change.Target != null) Bikini.SetFor(this, change.Target, true, change.Choice);
                 }
                 // Typing in a text box of the window ("j" included) must not open, close or trigger anything.
                 if (Menu.TypingText)
@@ -187,10 +220,6 @@ namespace CMAScenes
                 {
                     ToggleBikini();
                 }
-                if (Plugin.ToggleKey.Value != KeyCode.None && Input.GetKeyDown(Plugin.ToggleKey.Value))
-                {
-                    SetActive(!Twerking, false);
-                }
                 if (Plugin.RideKey.Value != KeyCode.None && Input.GetKeyDown(Plugin.RideKey.Value))
                 {
                     SetActive(!Riding, true);
@@ -221,9 +250,8 @@ namespace CMAScenes
             {
                 return;
             }
-            bool ride = m_ride;
-            Poses.Pose[] poses = ride ? Poses.Ride : Poses.Twerk;
-            var selected = ride ? Plugin.RidePoseType : Plugin.TwerkPoseType;
+            Poses.Pose[] poses = Poses.Ride;
+            var selected = Plugin.RidePoseType;
             int current = Poses.IndexOf(poses, selected.Value);
             int next = current < 0 ? (direction < 0 ? poses.Length - 1 : 0) : (current + direction + poses.Length) % poses.Length;
             Poses.Apply(poses[next], selected);
@@ -234,10 +262,9 @@ namespace CMAScenes
         // range of its slider in the window. Saved at once, like a slider let go.
         internal void ChangeSpeed(int dir)
         {
-            bool ride = !Twerking;
-            ConfigEntry<float> e = ride ? Plugin.RideFrequency : Plugin.Frequency;
-            float step = ride ? 0.1f : 0.2f;
-            float min = ride ? 0.3f : 0.1f, max = ride ? 2.5f : 5f;
+            ConfigEntry<float> e = Plugin.RideFrequency;
+            float step = 0.1f;
+            float min = 0.3f, max = 2.5f;
             float next = Mathf.Clamp(Mathf.Round((e.Value + dir * step) / step) * step, min, max);
             if (Mathf.Abs(next - e.Value) < 1e-4f)
             {
@@ -252,66 +279,49 @@ namespace CMAScenes
             catch (Exception)
             {
             }
-            Notice((ride ? Loc.T("Tempo of the sex: ", "Темп секса: ") : Loc.T("Tempo of the twerk: ", "Темп тверка: ")) + next.ToString("0.0") + Loc.T(" a second", " в секунду"));
+            Notice(Loc.T("Tempo of the sex: ", "Темп секса: ") + next.ToString("0.0") + Loc.T(" a second", " в секунду"));
         }
 
-        // Starts, stops or switches between the two modes: the twerk and the ride.
         private void SetActive(bool on, bool ride)
         {
+            if (!ride) return;
             bool wasOn = m_toggled;
             m_nextScan = 0f;
-            if (on && wasOn)
-            {
-                // Already going, so this is a change of mode. She is never thrown from one pose into the other: she comes out
-                // of the one she is in first, and only then goes into the new one (RunFrame does the second half).
-                m_switching = ride != m_ride;
-                m_switchRide = ride;
-                Plugin.ModLog.LogInfo(m_switching ? (ride ? "Twerk -> Ride" : "Ride -> Twerk") + ": coming out of the pose first" : "Staying in " + (m_ride ? "Ride" : "Twerk"));
-                return;
-            }
             m_toggled = on;
             m_switching = false;
-            if (on)
+            if (on && !wasOn)
             {
-                if (ride != m_ride && m_poseW > 0.02f)
-                {
-                    // Turned on again while she is still coming out of the other mode: that is finished first.
-                    m_switching = true;
-                    m_switchRide = ride;
-                }
-                else
-                {
-                    m_ride = ride;
-                    EnterMode();
-                }
+                m_ride = true;
+                EnterMode();
             }
-            Plugin.ModLog.LogInfo((ride ? "Ride " : "Twerk ") + (on ? "on" : "off"));
+            Plugin.ModLog.LogInfo("Scene " + (on ? "on" : "off"));
             if (!on && wasOn && m_ride && SessionText().Length > 0)
             {
                 Plugin.ModLog.LogInfo("Ride: the tally: " + SessionText() + ".");
             }
             if (on && !wasOn)
             {
-                // Put on for the mode, if she is not wearing it already and there is one picked. Only a bikini put on here is
-                // taken off again when the mode stops: one she was already wearing stays on her.
-                m_bikiniByMode = Plugin.BikiniWithTwerk.Value && !Bikini.AnyOn()
-                    && !(string.IsNullOrWhiteSpace(Plugin.BikiniTop.Value) && string.IsNullOrWhiteSpace(Plugin.BikiniBottom.Value));
-                if (m_bikiniByMode)
+                // Put on the selected outfit for this scene only if the character is not already wearing it.
+                m_outfitByScene = Plugin.OutfitWithScene.Value && !Bikini.AnyOn()
+                    && Bikini.CurrentChoice().Items.Count > 0;
+                if (m_outfitByScene)
                 {
-                    Bikini.Set(this, true);
+                    m_modeClothingCharacter = WardrobeCharacters.Selected;
+                    Bikini.SetFor(this, m_modeClothingCharacter, true);
                 }
             }
-            else if (!on && wasOn && m_bikiniByMode)
+            else if (!on && wasOn && m_outfitByScene)
             {
-                m_bikiniByMode = false;
-                m_reapplyPending = false;
-                Bikini.Set(this, false);
+                m_outfitByScene = false;
+                m_clothingChanges.Cancel(m_modeClothingCharacter);
+                Bikini.SetFor(this, m_modeClothingCharacter, false);
+                m_modeClothingCharacter = null;
             }
         }
 
         internal static ShakeController Instance;
         private int m_lastFrame = -1;
-        private bool m_bikiniByMode;
+        private bool m_outfitByScene;
 
         // The game runs everything on its own ordered update stages (GlobalUpdater). Posing her at the first late
         // stage of the frame, before the IK, hair, constraint and collider stages, makes all of them see the posed body.
@@ -510,11 +520,11 @@ namespace CMAScenes
                     {
                         m_ride = m_switchRide;
                         EnterMode();
-                        Plugin.ModLog.LogInfo((m_ride ? "Ride" : "Twerk") + " begins");
+                        Plugin.ModLog.LogInfo("Scene begins");
                     }
                 }
 
-                bool active = m_toggled || m_poseW > 0f || m_shakeW > 0f || m_heroReady || m_wet > 0f;
+                bool active = m_toggled || m_poseW > 0f || m_shakeW > 0f || m_heroReady || m_wet > 0f || Plugin.XRay.Value;
                 if (active && Time.unscaledTime >= m_nextScan)
                 {
                     m_nextScan = Time.unscaledTime + 2f;
@@ -562,14 +572,16 @@ namespace CMAScenes
                         }
                         else
                         {
-                            Apply(w, 0f, 0f, m_motion);
+                            BeginAll(w);
+                            ReleaseAll(w);
                             HerBodyFollow(w, false);
                         }
                     }
                     else
                     {
-                        Apply(w, poseW, shakeW, m_motion);
-                        HerBodyFollow(w, poseW > 0.0005f || shakeW > 0.0005f);
+                        BeginAll(w);
+                        ReleaseAll(w);
+                        HerBodyFollow(w, false);
                     }
                     if (!early)
                     {
@@ -583,7 +595,7 @@ namespace CMAScenes
                 // (Once a frame: the first few in full, then one now and then.)
                 if (WarnOnce(ref m_frameWarns, ref m_frameQuiet))
                 {
-                    Plugin.ModLog.LogWarning("Twerk failed: " + (m_frameWarns <= 3 ? ex.ToString() : ex.Message));
+                    Plugin.ModLog.LogWarning("Scene update failed: " + (m_frameWarns <= 3 ? ex.ToString() : ex.Message));
                 }
             }
             return true;
@@ -641,6 +653,7 @@ namespace CMAScenes
 
         private void OnGUI()
         {
+            KeepCursor();
             try
             {
                 if (m_style == null)
@@ -674,8 +687,8 @@ namespace CMAScenes
                 if (Time.unscaledTime >= m_onScreenAt)
                 {
                     m_onScreenAt = Time.unscaledTime + 0.25f;
-                    string label = m_ride ? Loc.T("SEX", "СЕКС") : Loc.T("TWERK", "ТВЕРК");
-                    string stopKey = Loc.Key(m_ride ? Plugin.RideKey.Value : Plugin.ToggleKey.Value);
+                    string label = Loc.T("SEX", "СЕКС");
+                    string stopKey = Loc.Key(Plugin.RideKey.Value);
                     m_onScreen = m_women.Count == 0 ? label + Loc.T(" (no model found)", " (модель не найдена)") : label + Loc.T(" ON  -  ", " ИДЁТ  -  ") + stopKey + Loc.T(" to stop", ": остановить");
                     m_onScreenStatus = m_ride && m_toggled && !m_switching && Plugin.ShowStatus.Value ? RideStatusLine() : "";
                 }

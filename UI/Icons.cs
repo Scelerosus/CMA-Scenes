@@ -45,11 +45,6 @@ namespace CMAScenes
             // On her knees with her hands on her thighs: what "on her knees" means, beside the cowgirl's squat.
             { "legs.knees", "m c 87 83 6.5; m l 79 86 50 86 9 87 4.5; h l 43 89 64 84 46 73 52 46 5; h c 55 34 8; h l 48 30 43 38 3; f l 52 48 53 61 57 76 4.5" },
 
-            // ---- the twerk: standing, bent forward, her bottom to the left ----
-            { "pose.bent-over", "m l 20 94 82 94 2.2; h l 59 92 51 91 56 72 42 54 66 39 5; h c 39 56 8; h c 77 32 8; f l 66 41 64 56 57 69 4.5" },
-            { "pose.deep-squat", "m l 20 94 82 94 2.2; h l 62 92 54 91 58 62 36 68 49 43 5; h c 33 68 8; h c 55 32 8; h l 49 27 44 34 3; f l 50 45 58 52 59 61 4.5" },
-            { "pose.hands-on-hips", "m l 20 94 82 94 2.2; h l 57 92 49 91 54 74 44 58 54 32 5; h c 41 59 8; h c 58 20 8; h l 52 16 47 23 3; f l 54 34 39 42 45 55 4.5" },
-            { "pose.low-arch", "m l 20 94 82 94 2.2; h l 52 92 44 91 46 71 38 50 53 53 68 45 5; h c 35 50 8; h c 78 40 8; f l 67 47 60 58 49 68 4.5" },
             // Standing as the game has her, arms down: the "as in the game" of the hands.
             { "pose.standing", "m l 20 94 82 94 2.2; h l 56 92 48 91 49 73 48 55 49 28 5; h c 50 16 8; h l 43 13 39 21 3; f l 49 31 54 44 56 56 4.5" },
 
@@ -59,14 +54,41 @@ namespace CMAScenes
 
             // ---- the pages: bold and plain, to read on a small coloured square ----
             { "tab.home", "h p 3 10 50 50 13 90 50; h p 2 22 44 78 44 78 88 22 88; x p 1 42 62 58 62 58 92 42 92" },
-            { "tab.twerk", "h l 58 94 48 92 56 70 38 50 64 34 8; h c 34 52 11; h c 78 26 11; f l 64 37 60 54 55 66 7" },
             { "tab.ride", "m c 88 80 8; m l 78 85 8 86 7; h l 68 92 59 90 66 60 44 70 54 38 8; h c 60 22 11; f l 54 42 58 54 58 63 7" },
             { "tab.bikini", "h p 3 14 46 31 22 46 46; h p 3 54 46 69 22 86 46; h l 46 43 54 43 3.5; h l 31 22 41 8 3.5; h l 69 22 59 8 3.5; h l 4 45 14 45 3.5; h l 86 45 96 45 3.5; h p 4 20 60 80 60 57 88 43 88; h l 8 58 20 60 3.5; h l 80 60 92 58 3.5" },
             { "tab.profiles", "h c 50 32 17; h l 26 80 74 80 22; x p 0 0 92 100 92 100 100 0 100" },
             { "tab.settings", "h c 50 50 29; h l 50 50 88 50 8; h l 50 50 76.9 76.9 8; h l 50 50 50 88 8; h l 50 50 23.1 76.9 8; h l 50 50 12 50 8; h l 50 50 23.1 23.1 8; h l 50 50 50 12 8; h l 50 50 76.9 23.1 8; x c 50 50 12" },
+            // ---- compact clothing filters ----
+            { "clothes.all", "h l 18 25 82 25 5; h l 18 50 82 50 5; h l 18 75 82 75 5" },
+            { "clothes.underwear.top", "h p 3 14 46 31 22 46 46; h p 3 54 46 69 22 86 46; h l 46 43 54 43 3.5; h l 31 22 41 8 3.5; h l 69 22 59 8 3.5" },
+            { "clothes.underwear.bottom", "h p 4 22 20 78 20 72 70 58 90 42 90 28 70" },
+            { "clothes.upper", "h p 3 25 20 40 12 50 25 60 12 75 20 72 48 61 48 59 88 41 88 39 48 28 48" },
+            { "clothes.lower", "h p 3 27 15 73 15 70 88 55 88 50 48 45 88 30 88" },
+            { "clothes.onepiece", "h p 4 35 12 65 12 62 43 78 88 22 88 38 43" },
+            { "clothes.set", "h p 2 14 16 43 16 43 43 14 43; h p 2 57 16 86 16 86 43 57 43; h p 2 14 57 43 57 43 84 14 84; h p 2 57 57 86 57 86 84 57 84" },
+            { "clothes.shoes", "h p 3 20 60 43 60 48 76 80 80 86 91 17 91; h l 47 77 65 79 3" },
+            { "clothes.jacket", "h p 3 25 18 42 10 50 24 58 10 75 18 70 88 30 88; h l 50 24 50 86 3; h l 39 32 46 42 2.5; h l 61 32 54 42 2.5" },
+            { "clothes.accessories", "h l 50 12 50 88 4; h l 12 50 88 50 4; h l 23 23 77 77 3; h l 77 23 23 77 3" },
+            { "clothes.glasses", "h o 30 50 17 4; h o 70 50 17 4; h l 47 48 53 48 4; h l 12 40 4 37 3; h l 88 40 96 37 3" },
+            { "clothes.socks", "h p 3 35 14 64 14 61 58 78 66 78 82 54 82 45 72 40 57 35 57" },
+            { "clothes.gloves", "h p 3 34 45 34 18 42 18 46 39 50 12 58 12 59 39 64 18 72 20 70 48 75 28 83 32 76 59 68 82 43 82 31 70" },
+            { "clothes.hat", "h p 3 15 62 28 53 36 25 64 25 72 53 85 62 89 75 11 75" },
+            { "clothes.upper.accessories", "h p 3 25 20 40 12 50 25 60 12 75 20 72 48 61 48 59 88 41 88 39 48 28 48; h l 50 34 50 60 3; h l 39 47 61 47 3" },
+            { "clothes.lower.accessories", "h p 3 27 15 73 15 70 88 55 88 50 48 45 88 30 88; h l 50 52 50 82 3; h l 39 67 61 67 3" },
+            { "clothes.other", "h c 25 50 8; h c 50 50 8; h c 75 50 8" },
+            { "clothes.texture", "h p 2 13 22 43 22 43 52 13 52; h p 2 57 22 87 22 87 52 57 52; h p 2 13 60 43 60 43 88 13 88; h p 2 57 60 87 60 87 88 57 88" },
+            { "clothes.random", "h p 3 17 17 83 17 83 83 17 83; h c 34 34 5; h c 66 34 5; h c 50 50 5; h c 34 66 5; h c 66 66 5" },
+            { "clothes.remove", "h l 24 24 76 76 5; h l 76 24 24 76 5" },
         };
 
         private static readonly Dictionary<string, Texture2D> s_made = new Dictionary<string, Texture2D>();
+        private static readonly OwnedResources<Texture2D> s_owned = new(t => { if (t != null) UnityEngine.Object.Destroy(t); });
+
+        internal static void Release()
+        {
+            s_made.Clear();
+            s_owned.Clear();
+        }
 
         // The picture of that name, made the first time; null if there is none (the caller then draws without it).
         internal static Texture2D Get(string name)
@@ -218,6 +240,7 @@ namespace CMAScenes
             List<Shape> shapes = Parse(spec);
             float unit = Size / 100f;
             var t = new Texture2D(Size, Size, TextureFormat.RGBA32, true);
+            s_owned.Add(t);
             for (int y = 0; y < Size; y++)
             {
                 for (int x = 0; x < Size; x++)

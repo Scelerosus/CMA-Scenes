@@ -2,3 +2,13 @@ bin/
 obj/
 *.user
 .vs/
+verification/game-api.txt
+
+# Local agent tooling and migration/install notes.
+/.agents/
+/.codex/
+/.rune/
+/AGENTS.md
+/rune.config.json
+/TECHNICAL-PROGRESS.md
+/RESCUE-REPORT.md

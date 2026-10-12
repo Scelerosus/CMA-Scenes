@@ -23,9 +23,7 @@ namespace CMAScenes
         internal static ConfigEntry<float> WindowHeight;
         internal static ConfigEntry<float> UiScale;
         internal static ConfigEntry<float> UiDim;
-        internal static ConfigEntry<string> UiFolds;
         internal static ConfigEntry<bool> WindowCollapsed;
-        internal static ConfigEntry<KeyCode> ToggleKey;
         internal static ConfigEntry<KeyCode> RideKey;
         internal static ConfigEntry<KeyCode> BikiniKey;
         internal static ConfigEntry<KeyCode> CondomKey;
@@ -49,27 +47,10 @@ namespace CMAScenes
         internal static ConfigEntry<float> CircleRadius;
         internal static ConfigEntry<float> RollDegrees;
 
-        // ---- The twerk: what the window shows ----
-        internal static ConfigEntry<string> TwerkPoseType;
-        internal static ConfigEntry<float> Frequency;
-        internal static ConfigEntry<float> BounceHeight;
-        internal static ConfigEntry<string> HandsOn;
         internal static ConfigEntry<float> ButtAmplitude;
         internal static ConfigEntry<bool> ShakeChest;
-        internal static ConfigEntry<float> LeanDegrees;
-        internal static ConfigEntry<float> Arch;
-        internal static ConfigEntry<float> SquatDepth;
-        internal static ConfigEntry<float> Stance;
 
-        // ---- The twerk: finer points, in this file only ----
-        internal static ConfigEntry<float> TiltDegrees;
         internal static ConfigEntry<float> ChestAmplitude;
-        internal static ConfigEntry<float> HipBack;
-        internal static ConfigEntry<float> ToesOut;
-        internal static ConfigEntry<float> HipWidth;
-        internal static ConfigEntry<float> HipHeight;
-        internal static ConfigEntry<float> HipForward;
-        internal static ConfigEntry<float> ElbowBack;
 
         // ---- The sex: what the window shows ----
         internal static ConfigEntry<string> RideHole;
@@ -143,13 +124,17 @@ namespace CMAScenes
 
         // ---- The hero ----
 
-        // ---- The bikini ----
+        // ---- The outfit ----
         internal static ConfigEntry<string> BikiniTop;
         internal static ConfigEntry<string> BikiniBottom;
+        internal static ConfigEntry<string> BikiniItems;
+        internal static ConfigEntry<string> BikiniMaterials;
         internal static ConfigEntry<string> BikiniColor;
+        internal static ConfigEntry<string> BikiniColors;
         internal static ConfigEntry<bool> BikiniSolid;
-        internal static ConfigEntry<bool> BikiniWithTwerk;
+        internal static ConfigEntry<bool> OutfitWithScene;
         internal static ConfigEntry<string> BikiniSort;
+        internal static ConfigEntry<float> ClothingRadius;
 
         // ---- For debugging ----
         internal static ConfigEntry<bool> DebugPerf;
@@ -164,24 +149,22 @@ namespace CMAScenes
         private void BindSettings()
         {
             // ---- The window and the keys ----
-            MenuKey = Config.Bind("Input", "MenuKey", KeyCode.J, "Key that opens or closes the settings window (bikini, colour, twerk and ride settings).");
+            MenuKey = Config.Bind("Input", "MenuKey", KeyCode.J, "Key that opens or closes the settings window (clothing, colour and scene settings).");
             Language = Config.Bind("UI", "Language", "auto", "Language of the settings window and of the notices on the screen: ru, en, or auto (Russian when the system is in Russian, English otherwise).");
             WindowX = Config.Bind("UI", "WindowX", 24f, "Where the settings window was left: distance from the left edge of the screen.");
             WindowY = Config.Bind("UI", "WindowY", 24f, "Where the settings window was left: distance from the top of the screen.");
             WindowHeight = Config.Bind("UI", "WindowHeight", 0f, "Height of the settings window (drag its bottom-right corner). 0 = as tall as fits the screen.");
             UiScale = Config.Bind("UI", "Scale", 1f, "Size of the settings window: 0.75 to 1.5.");
             UiDim = Config.Bind("UI", "Brightness", 0.62f, "The game shows what the plugin draws brighter than it is meant (measured: about 1.6 times), which washes the colours of the settings window out. Its colours are darkened by this much to make up for it: 1 leaves them as they are.");
-            UiFolds = Config.Bind("UI", "Folds", "", "Which of the folding cards of the settings window are open (kept by the window itself).");
             WindowCollapsed = Config.Bind("UI", "Collapsed", false, "The settings window is folded to a small bar with the start buttons.");
-            ToggleKey = Config.Bind("Input", "ToggleKey", KeyCode.H, "Key that starts or stops the twerk.");
             RideKey = Config.Bind("Ride", "Key", KeyCode.L, "Key that starts or stops the ride: your view drops low in front of her and she rides you.");
-            BikiniKey = Config.Bind("Bikini", "Key", KeyCode.K, "Key that puts her in the bikini, or back in her clothes.");
+            BikiniKey = Config.Bind("Bikini", "Key", KeyCode.K, "Key that puts the selected outfit on or restores her clothes.");
             CondomKey = Config.Bind("Condom", "Key", KeyCode.I, "Key that gets a condom out during the ride (it lies on his belly, to be taken with his hand and brought to his tip), or takes off the one he wears.");
             PresetKey = Config.Bind("Input", "PresetKey", KeyCode.P, "Key that switches to the next preset: Slow, Soft, Fast, Mine.");
-            NextPoseKey = Config.Bind("Input", "NextPoseKey", KeyCode.KeypadMultiply, "While twerking or riding, switch to the next pose; hold Shift for the previous pose. None disables the shortcut.");
-            FasterKey = Config.Bind("Input", "FasterKey", KeyCode.KeypadPlus, "Key that makes the ride (or the twerk, while she twerks) a little faster. None: no key.");
-            SlowerKey = Config.Bind("Input", "SlowerKey", KeyCode.KeypadMinus, "Key that makes the ride (or the twerk, while she twerks) a little slower. None: no key.");
-            ShowNotice = Config.Bind("Input", "ShowNotice", true, "Show a line at the top of the screen while she twerks or rides: what is running and which key stops it.");
+            NextPoseKey = Config.Bind("Input", "NextPoseKey", KeyCode.KeypadMultiply, "While the scene is active, switch to the next pose; hold Shift for the previous pose. None disables the shortcut.");
+            FasterKey = Config.Bind("Input", "FasterKey", KeyCode.KeypadPlus, "Key that makes the ride a little faster. None: no key.");
+            SlowerKey = Config.Bind("Input", "SlowerKey", KeyCode.KeypadMinus, "Key that makes the ride a little slower. None: no key.");
+            ShowNotice = Config.Bind("Input", "ShowNotice", true, "Show a line at the top of the screen while the scene is active: what is running and which key stops it.");
             ShowStatus = Config.Bind("Input", "ShowStatus", true, "Under that line, while she rides: what she is doing, the pose, her speed and how aroused she is.");
             ActiveProfile = Config.Bind("Profiles", "Active", "", "The name of the profile loaded or saved last in the window.");
 
@@ -190,34 +173,17 @@ namespace CMAScenes
             PresetName = Config.Bind("Behavior", "Preset", "Mine", "Slow (unhurried, full depth), Soft (slower and gentler), Fast (quicker) or Mine (your own settings exactly as they are). The preset only changes the speed and the depth of the motion on top of them.");
             MoveSeconds = Config.Bind("Behavior", "MoveSeconds", 6f, "About how long she keeps each move, in seconds.");
             Smoothness = Config.Bind("Motion", "Smoothness", 0.5f, "How smooth the motion is, from 0 to 1: every part of it is eased a little, so that nothing moves in steps and the knocks of the bounce are rounded off. 0 is the raw motion; more also takes some of the depth off a fast bounce.");
-            PoseRamp = Config.Bind("Pose", "PoseRamp", 1.5f, "Seconds a transition takes: getting into and out of a pose, changing from the twerk to the ride (out of the one, then into the other), and moving to a new pose or new place for her hands. Every one of them starts and ends gently.");
+            PoseRamp = Config.Bind("Pose", "PoseRamp", 1.5f, "Seconds a transition takes: getting into and out of a pose, and moving to a new pose or new place for her hands. Every one of them starts and ends gently.");
             ShakeDelay = Config.Bind("Pose", "ShakeDelay", 0.9f, "Seconds after pressing the key before the bouncing starts.");
             LeanExtra = Config.Bind("Behavior", "LeanExtra", 15f, "Extra forward lean she drifts into now and then, in degrees.");
             SwayWidth = Config.Bind("Behavior", "SwayWidth", 0.07f, "Side to side move: how far the hips swing, in metres.");
             CircleRadius = Config.Bind("Behavior", "CircleRadius", 0.055f, "Hip circle move: radius of the circle, in metres.");
             RollDegrees = Config.Bind("Behavior", "RollDegrees", 4f, "Side to side and circle moves: how far the pelvis rolls, in degrees.");
 
-            // ---- The twerk: what the window shows ----
-            TwerkPoseType = Config.Bind("Pose", "Type", "", "The twerk pose chosen last in the window: Bent over, Deep squat, Hands on hips or Low arch (empty until one is chosen). Choosing one sets the lean, the arch, the squat, the stance and the hands.");
-            Frequency = Config.Bind("Motion", "Frequency", 2.4f, "Bounces per second (the tempo drifts around this).");
-            BounceHeight = Config.Bind("Motion", "BounceHeight", 0.035f, "How far the hips go up and down, in metres.");
-            HandsOn = Config.Bind("Pose", "HandsOn", "Knees", "Where the hands rest: Hips, Knees or None.");
             ButtAmplitude = Config.Bind("Motion", "ButtAmplitude", 0.03f, "Extra up and down movement of the glute bones, in metres.");
             ShakeChest = Config.Bind("Motion", "ShakeChest", false, "Also bounce the chest.");
-            LeanDegrees = Config.Bind("Pose", "LeanDegrees", 58f, "How far she bends forward, in degrees (mostly hinged at the hips).");
-            Arch = Config.Bind("Pose", "Arch", 16f, "How far the lower back is arched, in degrees: the pelvis tips forward, the lower back curves the other way and the upper body stays where the lean puts it, which pushes the bottom up and back.");
-            SquatDepth = Config.Bind("Pose", "SquatDepth", 0.2f, "How far the hips drop, in metres. The feet stay planted and the knees bend.");
-            Stance = Config.Bind("Pose", "Stance", 0.22f, "How far each foot is moved out to the side from where it stands, in metres: a twerk is done with the feet wide apart.");
 
-            // ---- The twerk: finer points, in this file only ----
-            TiltDegrees = Config.Bind("Motion", "TiltDegrees", 8f, "How much the pelvis rocks with each bounce, in degrees.");
             ChestAmplitude = Config.Bind("Motion", "ChestAmplitude", 0.012f, "How far the chest bones move, in metres.");
-            HipBack = Config.Bind("Pose", "HipBack", 0.12f, "How far the hips are pushed back, in metres.");
-            ToesOut = Config.Bind("Pose", "ToesOut", 20f, "How far the toes are turned outward, in degrees. The knees are pushed out over them.");
-            HipWidth = Config.Bind("Pose", "HipWidth", 0.09f, "Hands on hips: how far out from the hip joint the wrist sits, in metres.");
-            HipHeight = Config.Bind("Pose", "HipHeight", 0.15f, "Hands on hips: how far up the flank from the hip joint the wrist sits, in metres.");
-            HipForward = Config.Bind("Pose", "HipForward", 0.03f, "Hands on hips: how far behind the hip joint the wrist sits (the fingers then reach the front), in metres.");
-            ElbowBack = Config.Bind("Pose", "ElbowBack", 0.4f, "How far the elbows point backwards as well as outwards.");
 
             // ---- The sex: what the window shows ----
             RideHole = Config.Bind("Ride", "Hole", "Vagina", "Which of her holes she takes him in during the ride: Vagina or Anus.");
@@ -234,7 +200,7 @@ namespace CMAScenes
             PlaceTour = Config.Bind("Place", "Tour", false, "After each orgasm of hers she takes him on to the next place of the room (the furniture that was found, the spot that was looked at, and where she stands).");
             PlaceFade = Config.Bind("Place", "Fade", true, "Cut to black for a moment as she is carried to the place and back: she is carried at once, not along a path.");
             RideNaturalArms = Config.Bind("Ride", "NaturalArms", true, "Her arms are posed by what an arm can do: her elbow goes where her wrist is spared, her hand is turned no further than a wrist turns, and the bones along her forearm carry its turn. Off: as CMA Shake posed them.");
-            XRay = Config.Bind("XRay", "On", false, "The X-ray: during the sex her insides (as the game itself has them: her canal, her womb, her rectum), what of his penis is in them, and his semen in her as the game has it (filling her, and running out of her while the game lets it out) are shown. Switched by its key and in the window.");
+            XRay = Config.Bind("XRay", "On", false, "The X-ray: outside sex, show the woman nearest the centre of the view through her body or in the inset; during sex show the ridden woman, his penis in her, and the semen the game has in her. Switched by its key and in the window.");
             XRayKey = Config.Bind("XRay", "Key", KeyCode.U, "Key that switches the X-ray on and off.");
             XRayView = Config.Bind("XRay", "View", "Both", "What of the X-ray is shown: Through (her insides and his penis drawn over her body, wherever one looks from), Inset (a cut through her from front to back, in a frame at the side of the screen), Both, or Game (the game's own X-ray of her pelvis instead: its camera and its frame, switched on for the sex whatever level the agency has reached).");
             XRayOpacity = Config.Bind("XRay", "Opacity", 0.55f, "Through her body: how solid her insides are drawn, from 0.15 (a faint veil) to 1.");
@@ -300,13 +266,18 @@ namespace CMAScenes
 
             // ---- The hero ----
 
-            // ---- The bikini ----
-            BikiniTop = Config.Bind("Bikini", "Top", "microbikinitop, bikinitop", "Part of the in-game name or id of the top, from the installed clothing mods. Several can be listed, comma separated; the first that exists is used.");
-            BikiniBottom = Config.Bind("Bikini", "Bottom", "bikinibot, tanga, gstring", "Part of the in-game name or id of the bottom. Several can be listed; the first that exists is used.");
-            BikiniColor = Config.Bind("Bikini", "Color", "#D81B60", "Colour of the bikini as #RRGGBB.");
+            // ---- Outfit (legacy keys preserved) ----
+            BikiniTop = Config.Bind("Bikini", "Top", "microbikinitop, bikinitop", "Legacy top item selector; used when no Bikini/Items list is saved.");
+            BikiniBottom = Config.Bind("Bikini", "Bottom", "bikinibot, tanga, gstring", "Legacy bottom item selector; used when no Bikini/Items list is saved.");
+            BikiniItems = Config.Bind("Bikini", "Items", "", "Selected clothing item IDs, managed by the Outfit page. Legacy Top and Bottom remain supported.");
+            BikiniMaterials = Config.Bind("Bikini", "Materials", "{}", "Selected clothing material variants, managed by the Outfit page.");
+            BikiniColor = Config.Bind("Bikini", "Color", "#D81B60", "Tint of the selected outfit as #RRGGBB.");
+            BikiniColors = Config.Bind("Bikini", "Colors", "{}", "Per-garment colours as #RRGGBB, managed by the Outfit page.");
             BikiniSolid = Config.Bind("Bikini", "SolidColor", true, "Use a plain colour instead of the item's own texture.");
-            BikiniWithTwerk = Config.Bind("Bikini", "WithTwerk", false, "Put the bikini on automatically when the twerk starts, and take it off when it stops.");
-            BikiniSort = Config.Bind("UI", "ClothingSort", "Name", "How the list of clothing is sorted: Name (A to Z), NameDesc (Z to A) or Kind (by the kind of clothing, then by name).");
+            // Keep the legacy storage key so existing wardrobe preferences and profiles retain their value.
+            OutfitWithScene = Config.Bind("Bikini", "WithTwerk", false, "Legacy key: put the selected outfit on automatically for the scene.");
+            BikiniSort = Config.Bind("UI", "ClothingSort", "Name", "How the list of clothing is sorted: Name (A to Z), NameDesc (Z to A), or Kind (stable game type order, then name).");
+            ClothingRadius = Config.Bind("UI", "ClothingRadius", 8f, new ConfigDescription("Nearby clothing targets within this distance from the camera in metres.", new AcceptableValueRange<float>(1f, 50f)));
 
             // ---- For debugging ----
             DebugPerf = Config.Bind("Debug", "Perf", true, "While the plugin is being tuned: every 20 seconds the log says how many milliseconds each part of the plugin takes in a frame, and how long the frame itself is.");

@@ -1,5 +1,71 @@
 # CMA Scenes: journal
 
+## 0.4.1 — Individual garment colours
+
+- Clicking a catalog piece adds it if needed and opens its colour/material editor. Selected catalog pieces open editing rather than removing themselves. Removal remains explicit in Outfit.
+- Each garment has an independent #RRGGBB colour. Native loading, delayed callbacks, tint materials, both previews, copied drafts and saved outfits preserve the per-piece colour map. Editing a piece never changes the legacy shared colour or another piece's colour.
+- Saved outfit schema 3 records per-piece colours, with schemas 1/2 retaining their original shared-colour fallback. Invalid saved colours protect the file from replacement; invalid config overrides are ignored. Preferences, config and the old DLL are backed up for rollback before installation.
+- Outfit-wide Pattern/Solid style stays under More outfit options; the global colour editor and global random-colour action are removed.
+- Validation: 45 catalog/storage checks, 45 actual wardrobe-code fixture checks (including two differently coloured delayed native loads and reapplication), 34 UI source guards, clean Release build and installed-interoperability audit. User will check the layout in game.
+- Installed on 2026-10-12 while the game was closed; Release hash matched. Old DLL, scene config and saved-outfit preferences backed up with timestamp 20261012-185422; manifest `.rune/install-0.4.1-20261012-185422.json`. Clothing Fix remains 0.4.0. Compiled Unity audit: 554 API entry points passed.
+
+## 0.4.0 — Outfit workflow and wardrobe lifecycle
+
+- Reorganize the English Outfit page into Browse, Outfit and Saved, with a compact character selector, staged material editor and a separate native worn list. Use explicit Dress character / Restore previous outfit actions; saved drafts do not auto-apply.
+- Show the cursor through the game's CursorInputDriver and maintain its visibility while a mod menu is open. Avoid overriding another native cursor modifier when closing.
+- Apply material, colour and Solid to already-worn selected pieces by reloading them with independently cloned original slots. Use native coverage flags before catalog type for replacement regions.
+- Cancel failed outfit loads and roll back originals; retain failed-removal ownership and original snapshots for retries. Reconcile native undress and retain authoritative subskin references to remove orphan geometry even after native unregistering.
+- Release owned tint materials when garments leave. Isolate per-character update failures. Retain failure messages after rollback; explicit Dress/Restore clears them.
+- Distinguish Solid and Pattern thumbnail requests/cache entries. Preserve all catalog categories, saved drafts and favorites; destructive preference actions require confirmation.
+- Validation: 38 catalog/resource/source checks, 42 real-code wardrobe fixture checks, 29 UI source guards. Compiled Unity calls are audited against the installed interop API, including a self-check for the earlier stripped SelectionGrid dependency. In-game visual and native-loader validation is left to the user.
+- Installed on 2026-10-12 alongside Clothing Fix 0.4.0 while the game was closed. Both Release hashes verified; prior DLLs and both configs backed up with timestamp 20261012-054917. Saved outfit preferences preserved.
+
+## 0.3.37 — synchronize clothing replacement with the native equipped wardrobe
+
+- Replace OcultarPieza with RemovePieza for replaced items. Hidden equipped entries caused old clothing to remain in the native Outfit menu.
+- Clone original material-slot data before removal and restore it through AddPiezaAsync on toggle off. Keep snapshots until successful restoration, allowing retry on failure.
+- Retain originals across successive selections; restore the original pieces that a new partial selection no longer replaces. Serialize replacement against restoration callbacks and allow canceling a pending selection.
+- Release build and standalone checks pass. Native menu behavior still requires a live game check.
+
+## 0.3.36 — larger clothing previews and twerk removal
+
+- Enlarge cards from 88 × 88 to 160 × 160, list area from 236 to 420, and generated images from 256 × 256 to 384 × 384. Revised cache key regenerates smaller cached previews.
+- Delete the twerk posing implementation, pose bank, menu page, launch buttons, hotkey and dedicated settings. Remove its mode selection and speed routing. Move wardrobe code into Clothing.
+- Retain shared restoration and body-motion compatibility settings; unrelated mode implementations remain unchanged. Existing automatic clothing config/profile key is preserved under an internally renamed setting.
+- Independent review confirmed no reachable twerk path and equivalent shared cleanup; wardrobe persistence finding fixed by retaining its storage key. Build and standalone checks pass; new card layout still needs live observation.
+
+## 0.3.35 — tolerate stripped optional LOD type
+
+- Live 0.3.34 log identified the next blocker: LODGroup has no IL2CPP class pointer in this player. Guard optional LOD detection before constructing its native Type; a player without that class cannot have LODGroup prefab components.
+- Correct the missing fallback icon key to the existing tab.bikini asset.
+- Release compilation succeeds. Native thumbnail appearance remains unverified until the restarted game exercises generation.
+
+## 0.3.34 — fix unavailable previews in the IL2CPP player
+
+- User's screenshot showed blank white thumbnail cards. Live BepInEx log reproduced failures in generic GetComponentsInChildren<T> initialization for every preview; no preview PNGs were generated.
+- Use native component-query/creation overloads with explicit Il2CppType instead of stripped generic methods in preview staging and exposure setup.
+- Give thumbnail cards a dark background and tint the fallback icon so loading/failure no longer appears as a blank white rectangle. Preview failures include a full exception and cache key for diagnosis.
+- Release build passes with zero warnings/errors; 30 standalone checks pass. The reported native-call failure is addressed; appearance after restarting with this build still requires runtime verification.
+
+## 0.3.33 — clothing author credits and model previews
+
+- Author credits from item metadata, duplicate-name cleanup, explicit missing-author label, author search and full-name tooltips.
+- Garment-only 256 × 256 previews queued from Addressables model meshes; isolated HDRP camera, approximate unlit garment materials, aspect-preserving cards.
+- Disk cache keyed by item, model address and version; bounded memory cache, safe PNG checks, resource cleanup on close/refresh/destruction.
+- Disabled/inactive mesh alternatives are excluded. LOD prefabs use a fallback icon because GetLODs is stripped from this game's API. Skinned deformation and custom shader appearance remain limitations.
+- Independent review completed; standalone checks and Release build pass. Actual HDRP thumbnails require in-game verification.
+
+## 0.3.32 — technical clothing and UI update
+
+- Independent nearby wardrobe contexts, selected-character outfit changes, configurable 8 m default radius, no character cap.
+- Clothing categories, English game names and Russian fallback names, search, favorites, saved outfits with color and pattern visibility; paged catalog without the 250-row cutoff.
+- Per-character delayed outfit snapshots prevent edits to another character's pending outfit. Selected color changes update that character's pending snapshot.
+- One-piece items are added once; selecting separates clears conflicting whole-garment slots. Items already in the original outfit are not treated as temporary additions.
+- Versioned cosmetic JSON with atomic replacement; damaged or future-version documents remain protected until explicit reset.
+- Menu texture and icon ownership, release on brightness rebuild/controller destruction; game assets are borrowed.
+- Fresh independent review and standalone regression checks. Release builds without installing. In-game validation and frame-time comparison remain pending.
+- Forked from committed 0.3.30 at 0e19b0c. Original uncommitted 0.3.31 changes were excluded by the user's choice of starting state.
+
 Successor of CMA Shake (`..\CMAShake`, last version 0.53.5). Game: `C:\Games\Corrupted Modeling Agency 0.66` (IL2CPP, BepInEx 6).
 Plugin `BepInEx\plugins\CMAScenes\CMAScenes.dll`, GUID `community.cma.scenes`, config `BepInEx\config\community.cma.scenes.cfg`
 (taken over from `community.cma.shake.cfg` on the first run, profiles too). `[BepInIncompatibility("community.cma.shake")]`:
@@ -268,3 +334,29 @@ Reduced ride-only glute-bone wobble to 30% of its former response and limited it
 
 - An apparent loss of penetration with no upward stroke waits briefly for game contact to settle and no longer tightens the top-of-stroke margin. The log now records the actual upward travel and both contact signals.
 - During lively Kneeling her hands seek independently reachable places on his torso, falling back to her own thighs; the hands-under-breasts pose no longer leaves both elbows raised during the stroke.
+
+## 0.3.38 (2026-10-11) — detached Outfit renderers
+
+- Installed 0.3.37 matched this worktree's previous Release DLL by SHA256 (081C2A83...). User reported garment texture remaining after Outfit removal with CMA Clothing Fix enabled.
+- Runtime evidence: reports 20261011-181848-328-482922 through 182031-363 contain enabled Dress(Clone) at Dress[spruceless.clothing.clubdress], classified @body with no equipped Club Dress ID. It remains after Clothing Fix is disabled, so triangle masking alone does not account for the leftover geometry.
+- WardrobeRemoval captures authoritative garment primary/subskin renderers before native RemovePieza(id, destroy:true). After successful removal, renderers not retained by another equipped item are disabled and destroyed. Shared renderers and unsuccessful native removals are preserved. Used for replacement, take-off and late load completion.
+- Release build: zero warnings/errors. Six isolated checks pass with fake wardrobe/renderer lifetime; this does not emulate the native engine. User must restart and repeat apply/remove and rapid Outfit changes. Existing session orphans are not swept by name.
+- Installed while game closed, with previous installed DLL saved next to it as .before-outfit-cleanup-0.3.38-<timestamp>.bak. No CMA Clothing Fix code or configuration changes.
+
+## 0.3.39 — sequential native wardrobe loads
+
+0.3.38 did not resolve the user's leftover Club Dress. Fresh session log proves 0.3.38 loaded, then Outfit selected Club Dress and Hoodie; only Hoodie completed its callback. Reports still contain active unregistered Dress(Clone), even with Clothing Fix disabled. Concurrent native AddPiezaAsync calls are the leading cause, not yet proven by an after-fix run.
+
+Queued Outfit additions: Step starts only one native load while loading is empty. TakeOff clears unstarted additions; late completion removes the active item. Original restoration is serialized too, and failure retains original data without repeatedly retrying. Release build zero warnings/errors. Installed after user closed the game with backup .before-sequential-outfit-0.3.39.bak. Runtime apply/remove and rapid reapply checks pending. Ctrl+F12 toggles clipping masks; it is not the Outfit removal control.
+
+## 0.3.40
+
+Outfit reconciles native undress/hidden additions with retained retry state on failure. Added native glasses and exposed-geometry variant names. Material/color choices are staged until explicit application. Refactored catalog caching, material snapshots and validation; removed pure-choice dependency on native wardrobe class. Release builds clean; 34 catalog checks and 10 cleanup/synchronization checks pass. Runtime verification pending.
+
+## 0.3.41 — Outfit menu regression
+
+0.3.40 runtime log confirmed NotSupportedException in GUIContent.Temp(string[]) called by the new material SelectionGrid, closing the whole settings window. Replaced it with the existing Choice buttons in two-column rows. Added a source regression guard against reintroducing the stripped call. Material selection and explicit application remain. Native UI verification still required.
+
+## 0.3.42 — material loading regression
+
+Player.log confirms native LoaderMaterialesRutine throws NotSupportedException: Todos los materiales deben ser instancias. New selected material slots lacked the inherited instance flag and renderer slot index. Initialize materialSlot, field_Public_Boolean_0=true and color before loading. Keep generic PiezaDeRopaBase: the observed error is in material loading, not generic dispatch. Track missing addition/restoration callbacks after 60 seconds; block further loads, display a restart warning, retain original snapshot and queued load safety. Release build, 36 catalog/source guards and 13 removal/material checks pass. Native application needs user verification; instance flag semantics are inferred from the native loader error and the sole boolean on MaterialDataIDSlotPar.

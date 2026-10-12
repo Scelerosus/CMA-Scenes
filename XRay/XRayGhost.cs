@@ -528,6 +528,19 @@ namespace CMAScenes
                     {
                         from = m_xGhostFrom;
                     }
+                    if (from == null && w != null && w.character != null)
+                    {
+                        // The womb view needs a drawing material even when no male body is present.
+                        foreach (SkinnedMeshRenderer body in w.character.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                        {
+                            if (body != null && body.enabled && body.sharedMaterial != null)
+                            {
+                                from = body.sharedMaterial;
+                                m_xLayer = body.gameObject.layer;
+                                break;
+                            }
+                        }
+                    }
                     m_xGhostFrom = from;
                     if (m_wetParts.Count > 0 && m_wetParts[0].renderer != null)
                     {

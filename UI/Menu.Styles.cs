@@ -12,7 +12,7 @@ namespace CMAScenes
         {
             public GUIStyle panel, inner, card, seg, title, badge, h2, label, dim, value, status, statusOn, keycap, placeholder;
             public GUIStyle button, primary, ghost, close, tab, tabOn, row, rowSel, field, switchText, chip, preview;
-            public GUIStyle fold, big, bigOn, tip, warn, opt, optOn;
+            public GUIStyle big, bigOn, tip, warn, opt, optOn;
             public GUIStyle sliderTrack, sliderThumb, scrollTrack, scrollThumb;
             public GUIStyle good, bar, addr, tile, tileOn, iconText, tileText, tileSub, brand, app, appOn, tileUnder;
             // The labels of the rows wrapped in their column, the choices with their names on two lines, the small words
@@ -37,6 +37,7 @@ namespace CMAScenes
 
         private static Styles s_st;
         private static GUISkin s_skin;
+        private static readonly OwnedResources<Texture2D> s_ownedTextures = new(t => { if (t != null) UnityEngine.Object.Destroy(t); });
 
         private static Color WithAlpha(Color c, float a)
         {
@@ -57,6 +58,7 @@ namespace CMAScenes
         private static Texture2D Make(int w, int h, Func<float, float, Color> shade)
         {
             var t = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            s_ownedTextures.Add(t);
             for (int y = 0; y < h; y++)
             {
                 for (int x = 0; x < w; x++)
@@ -124,6 +126,10 @@ namespace CMAScenes
             {
                 return;
             }
+            // Styles borrow these textures; discard them before releasing and rebuilding the owned images.
+            s_st = null;
+            if (s_skin != null) { UnityEngine.Object.Destroy(s_skin); s_skin = null; }
+            s_ownedTextures.Clear();
             s_dim = dim;
             s_st = null;
             Color none = new Color(0f, 0f, 0f, 0f);
@@ -372,10 +378,6 @@ namespace CMAScenes
             st.scrollThumb = new GUIStyle(skin.verticalScrollbarThumb) { fixedWidth = 8f, padding = Pad4(0, 0, 0, 0), margin = Pad4(0, 0, 0, 0) };
             Back(st.scrollThumb, tScrollThumb, tScrollThumb, tScrollThumb, 5);
 
-            st.fold = new GUIStyle(st.ghost) { fontSize = 12, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleLeft, richText = true, padding = Pad4(4, 4, 2, 2), margin = Pad4(0, 0, 0, 0) };
-            Tint(st.fold, Hex("#C5CAD3"));
-            st.fold.fontSize = 11;
-
             st.good = new GUIStyle(st.dim);
             Tint(st.good, Good);
             st.bar = new GUIStyle();
@@ -435,7 +437,7 @@ namespace CMAScenes
                 foreach (GUIStyle s in new[]
                 {
                     st.title, st.badge, st.h2, st.label, st.dim, st.value, st.status, st.statusOn, st.keycap, st.placeholder, st.button, st.primary, st.ghost,
-                    st.close, st.tab, st.tabOn, st.row, st.rowSel, st.field, st.switchText, st.fold, st.big, st.bigOn, st.tip, st.warn, st.opt, st.optOn,
+                    st.close, st.tab, st.tabOn, st.row, st.rowSel, st.field, st.switchText, st.big, st.bigOn, st.tip, st.warn, st.opt, st.optOn,
                     st.good, st.addr, st.iconText, st.tileText, st.tileSub, st.brand, st.tileUnder,
                     st.labelWrap, st.optWrap, st.optOnWrap, st.hint, st.statusOnWrap, st.tipBox
                 })
